@@ -1,18 +1,16 @@
 package lt.vpranckaitis.scraper
 
 import lt.vpranckaitis.documentclustering.storage.Storage
-import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.Try
 
 object Scraper extends App {
 
-  Await.ready(new Storage().run, 5.seconds)
+  val articles = Await.result(new Storage().run, 5.seconds)
+  articles foreach println
 
+  /*
   val urls = List("http://www.delfi.lt/archive/?tod=01.01.2020&fromd=01.01.1999&channel=0&category=0")
 
   val articleUrls = urls flatMap { url =>
@@ -35,5 +33,6 @@ object Scraper extends App {
       //println(article >> text("div[itemprop=articleBody]"))
     }
   }
+  */
 
 }
