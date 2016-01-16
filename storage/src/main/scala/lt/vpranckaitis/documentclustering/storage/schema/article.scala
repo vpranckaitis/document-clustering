@@ -10,11 +10,11 @@ object Article {
             url: String,
             category: String,
             subcategory: String,
-            time: DateTime,
+            date: DateTime,
             title: String,
             description: String,
             text: String): Article =
-    Article(None, source, url, category, subcategory, time, title, description, text)
+    Article(None, source, url, category, subcategory, date, title, description, text)
 }
 
 case class Article(id: Option[Int],
@@ -22,10 +22,10 @@ case class Article(id: Option[Int],
                    url: String,
                    category: String,
                    subcategory: String,
-                   time: DateTime,
+                   date: DateTime,
                    title: String,
                    description: String,
-                   text: String)
+                   text: String) extends Storable
 
 class Articles(tag: Tag) extends Table[Article](tag, "articles") {
   def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
@@ -38,7 +38,7 @@ class Articles(tag: Tag) extends Table[Article](tag, "articles") {
 
   def subcategory = column[String]("subcategory")
 
-  def time = column[DateTime]("time")
+  def date = column[DateTime]("date")
 
   def title = column[String]("title")
 
@@ -46,7 +46,7 @@ class Articles(tag: Tag) extends Table[Article](tag, "articles") {
 
   def text = column[String]("text")
 
-  def * = (id.?, source, url, category, subcategory, time, title, description, text) <>
+  def * = (id.?, source, url, category, subcategory, date, title, description, text) <>
     ((Article.apply: (Option[Int], String, String, String, String, DateTime, String, String, String) => Article).tupled, Article.unapply)
 }
 
