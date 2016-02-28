@@ -14,4 +14,5 @@ class Storage {
     db.run(action)
   }
 
+  def streamArticles() = db.run(articlesQuery.take(1000).result.transactionally.withStatementParameters(fetchSize = 1000))
 }
