@@ -62,4 +62,5 @@ object Clustering extends App {
   }
   val clusters = Await.result(k, Duration.Inf)
   clusters foreach { c => println((c mkString "\n") + "\n---------") }
+  println(ClusteringEvaluation.purity(clusters))
 }
