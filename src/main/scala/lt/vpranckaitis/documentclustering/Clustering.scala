@@ -20,7 +20,7 @@ import scala.concurrent.duration.Duration
 object Clustering extends App {
 
 
-  val clusterer = new KMeansMacQueen(CosineDistanceFunction.STATIC, 10, 10000, new RandomlyChosenInitialMeans(RandomFactory.DEFAULT))
+  val clusterer = new KMeansMacQueen(SparseCosineDistanceFunction.STATIC, 10, 10000, new RandomlyChosenInitialMeans(RandomFactory.DEFAULT))
 
   val storage = new Storage
   val k = storage.streamArticles map { articles =>
@@ -35,6 +35,9 @@ object Clustering extends App {
       new Document(indexes, values, dimensionality, tokenArray._2.category)
     }
 
+    println(SparseCosineDistanceFunction.STATIC.distance(wordBags.head, wordBags.tail.head))
+    println(CosineDistanceFunction.STATIC.distance(wordBags.head, wordBags.tail.head))
+
     println(dimensionality)
 
     val typeInformation = new VectorFieldTypeInformation(SparseDoubleVector.FACTORY, dimensionality)
@@ -44,21 +47,17 @@ object Clustering extends App {
     database.initialize()
     println(database.getRelations)
 
-    clusterer.run(database).getToplevelClusters map { c =>
+    val t = System.currentTimeMillis()
+    val result = clusterer.run(database).getToplevelClusters map { c =>
       def getCategory(it: DBIDRef) = database.getBundle(it).data(1).asInstanceOf[Document].category
       def iterate(it: DBIDIter): Stream[String] = if (it.valid) getCategory(it) #:: iterate(it.advance()) else Stream.empty
 
       (iterate(c.getIDs.iter()) groupBy { s => s } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
     }
 
-    /*val result = r.cluster(wordBags.toIterable).asScala
+    println((System.currentTimeMillis() - t) * 0.001)
 
-    result map { z =>
-      println("-----")
-      println(z.getPoints.size)
-      println((z.getPoints.asScala map { _.category } groupBy { x => x } mapValues { _.length }).toSeq.sortBy(_._2)(Ordering[Int].reverse) mkString "\n")
-    }*/
-
+    result
   }
   val clusters = Await.result(k, Duration.Inf)
   clusters foreach { c => println((c mkString "\n") + "\n---------") }
