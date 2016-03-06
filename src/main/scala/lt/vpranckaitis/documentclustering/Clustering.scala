@@ -23,7 +23,7 @@ object Clustering extends App {
 
   val storage = new Storage
 
-  val clustersF = storage.streamArticles map { articles =>
+  val clustersF = storage.getArticlesByDataset(1) map { articles =>
     val tokens = articles map { a => (a.text split """[\s\.,!?\(\)\-„“":]+""" filter { _.length > 0 }, a)}
     val wordIndex = tokens.flatMap(_._1).distinct.zipWithIndex.toMap
     val reverseWordIndex = wordIndex map { case (key, value) => (value, key) }
@@ -35,7 +35,7 @@ object Clustering extends App {
       new Document(indexes, values, dimensionality, tokenArray._2)
     }
 
-    println(dimensionality)
+    println(s"Article count: ${articles.size}, dimensionality: $dimensionality")
 
     val typeInformation = new VectorFieldTypeInformation(SparseDoubleVector.FACTORY, dimensionality)
     val multipleObjectsBundle = MultipleObjectsBundle.makeSimple(typeInformation, wordBags.toList)

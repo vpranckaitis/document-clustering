@@ -15,4 +15,13 @@ class Storage {
   }
 
   def streamArticles() = db.run(articlesQuery.take(1000).result.transactionally.withStatementParameters(fetchSize = 1000))
+
+  def getArticlesByDataset(datasetId: Int) = {
+    val q = for {
+      a <- articlesQuery
+      ad <- articlesDatasetsQuery
+      if (ad.datasetId === datasetId && a.id === ad.articleId)
+    } yield a
+    db.run(q.result)
+  }
 }
