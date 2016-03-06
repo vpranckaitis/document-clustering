@@ -8,6 +8,7 @@
     </appender>
 
     <logger name="slick" level="INFO" />
+    <logger name="com.zaxxer.hikari" level="ERROR" />
 
     <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
