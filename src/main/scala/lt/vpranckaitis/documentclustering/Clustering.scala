@@ -1,5 +1,7 @@
 package lt.vpranckaitis.documentclustering
 
+import java.util.Locale
+
 import de.lmu.ifi.dbs.elki.algorithm.clustering.kmeans.KMeansMacQueen
 import de.lmu.ifi.dbs.elki.algorithm.clustering.kmeans.initialization.RandomlyChosenInitialMeans
 import de.lmu.ifi.dbs.elki.data.SparseDoubleVector
@@ -10,6 +12,7 @@ import de.lmu.ifi.dbs.elki.datasource.MultipleObjectsBundleDatabaseConnection
 import de.lmu.ifi.dbs.elki.datasource.bundle.MultipleObjectsBundle
 import de.lmu.ifi.dbs.elki.math.random.RandomFactory
 import lt.vpranckaitis.documentclustering.storage.Storage
+import org.tartarus.snowball.ext.LithuanianStemmer
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Await
@@ -24,7 +27,20 @@ object Clustering extends App {
   val storage = new Storage
 
   val clustersF = storage.getArticlesByDataset(1) map { articles =>
-    val tokens = articles map { a => (a.text split """[\s\.,!?\(\)\-„“":]+""" filter { _.length > 0 }, a)}
+
+    val lithuanianStemmer = new LithuanianStemmer()
+    def stem(s: String) = {
+      lithuanianStemmer.setCurrent(s)
+      lithuanianStemmer.stem()
+      lithuanianStemmer.getCurrent
+    }
+
+    def splitAndStem(text: String) = {
+      val splitted = text split """[\s\.,!?\(\)\-„“":]+""" filter { _.length > 0 }
+      splitted map { w => stem(w.toLowerCase(Locale.forLanguageTag("lt_LT"))) }
+    }
+
+    val tokens = articles map { a => (splitAndStem(a.text), a)}
     val wordIndex = tokens.flatMap(_._1).distinct.zipWithIndex.toMap
     val reverseWordIndex = wordIndex map { case (key, value) => (value, key) }
     val dimensionality = wordIndex.values.max + 1
