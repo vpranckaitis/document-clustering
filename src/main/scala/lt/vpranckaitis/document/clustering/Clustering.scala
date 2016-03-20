@@ -1,4 +1,4 @@
-package lt.vpranckaitis.documentclustering
+package lt.vpranckaitis.document.clustering
 
 import java.util.Locale
 
@@ -11,7 +11,7 @@ import de.lmu.ifi.dbs.elki.database.ids.{DBIDIter, DBIDRef}
 import de.lmu.ifi.dbs.elki.datasource.MultipleObjectsBundleDatabaseConnection
 import de.lmu.ifi.dbs.elki.datasource.bundle.MultipleObjectsBundle
 import de.lmu.ifi.dbs.elki.math.random.RandomFactory
-import lt.vpranckaitis.documentclustering.storage.Storage
+import lt.vpranckaitis.document.clustering.storage.Storage
 import org.tartarus.snowball.ext.LithuanianStemmer
 
 import scala.collection.JavaConversions._

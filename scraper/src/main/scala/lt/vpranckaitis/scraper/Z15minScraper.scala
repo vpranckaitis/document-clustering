@@ -1,8 +1,8 @@
 package lt.vpranckaitis.scraper
 
 import com.typesafe.scalalogging.StrictLogging
-import lt.vpranckaitis.documentclustering.storage.Storage
-import lt.vpranckaitis.documentclustering.storage.schema.Article
+import lt.vpranckaitis.document.clustering.storage.Storage
+import lt.vpranckaitis.document.clustering.storage.schema.Article
 import net.ruippeixotog.scalascraper.browser.Browser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._

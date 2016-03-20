@@ -1,4 +1,4 @@
-package lt.vpranckaitis.documentclustering
+package lt.vpranckaitis.document.clustering
 
 import de.lmu.ifi.dbs.elki.data.{NumberVector, SparseNumberVector}
 import de.lmu.ifi.dbs.elki.distance.distancefunction.CosineDistanceFunction

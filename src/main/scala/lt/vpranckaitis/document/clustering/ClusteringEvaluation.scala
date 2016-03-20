@@ -1,4 +1,4 @@
-package lt.vpranckaitis.documentclustering
+package lt.vpranckaitis.document.clustering
 
 object ClusteringEvaluation {
   private case class PositivesAndNegatives(tp: Long, fp: Long, tn: Long, fn: Long)

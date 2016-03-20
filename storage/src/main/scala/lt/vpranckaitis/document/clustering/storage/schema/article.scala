@@ -1,4 +1,4 @@
-package lt.vpranckaitis.documentclustering.storage.schema
+package lt.vpranckaitis.document.clustering.storage.schema
 
 import com.github.tototoshi.slick.PostgresJodaSupport._
 import org.joda.time.DateTime

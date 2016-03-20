@@ -1,4 +1,4 @@
-package lt.vpranckaitis.documentclustering.storage.schema
+package lt.vpranckaitis.document.clustering.storage.schema
 
 import slick.driver.PostgresDriver.api._
 import slick.lifted.{TableQuery, Tag}

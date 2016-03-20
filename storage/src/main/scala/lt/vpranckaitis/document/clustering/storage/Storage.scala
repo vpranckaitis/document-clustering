@@ -1,6 +1,6 @@
-package lt.vpranckaitis.documentclustering.storage
+package lt.vpranckaitis.document.clustering.storage
 
-import lt.vpranckaitis.documentclustering.storage.schema._
+import lt.vpranckaitis.document.clustering.storage.schema.{Article, Storable, articlesDatasetsQuery, articlesQuery}
 import slick.driver.PostgresDriver.api._
 
 class Storage {

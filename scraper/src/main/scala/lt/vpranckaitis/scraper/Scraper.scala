@@ -1,7 +1,7 @@
 package lt.vpranckaitis.scraper
 
 import com.typesafe.scalalogging.StrictLogging
-import lt.vpranckaitis.documentclustering.storage.Storage
+import lt.vpranckaitis.document.clustering.storage.Storage
 import net.ruippeixotog.scalascraper.browser.Browser
 import org.jsoup.Connection
 
