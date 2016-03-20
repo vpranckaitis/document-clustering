@@ -1,7 +1,7 @@
 package lt.vpranckaitis.document.clustering
 
 object ClusteringEvaluation {
-  private case class PositivesAndNegatives(tp: Long, fp: Long, tn: Long, fn: Long)
+  case class PositivesAndNegatives(tp: Long, fp: Long, tn: Long, fn: Long)
 
   def purity(clusters: Seq[Seq[(String, Int)]]) = {
     val count = (clusters flatMap { _.unzip._2 }).sum
@@ -9,7 +9,7 @@ object ClusteringEvaluation {
     sumOfMaximums.toDouble / count
   }
 
-  private[ClusteringEvaluation] def positivesAndNegatives(clusters: Seq[Seq[(String, Int)]]) = {
+  def positivesAndNegatives(clusters: Seq[Seq[(String, Int)]]) = {
     // http://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-clustering-1.html
     def chooseTwo(n: Long) = n * (n - 1) / 2
 
@@ -23,19 +23,19 @@ object ClusteringEvaluation {
     val allPairs = chooseTwo(numberOfElements)
 
     val positives = (sizesOfClusters map { chooseTwo(_) }).sum
-    val truePositives = sizesOfCategoriesInClusters.flatten.sum
+    val truePositives = sizesOfCategoriesInClusters.flatten.map(chooseTwo(_)).sum
     val falsePositives = positives - truePositives
 
 
     val negatives = allPairs - positives
     val falseNegatives = {
       val summands = for {
-        categoryClusterings <- sizesOfClustersInCategories
-        categorySize = categoryClusterings.sum.toLong
-        categoryClusteringSize <- categoryClusterings
+        categoryClustering <- sizesOfClustersInCategories
+        categorySize = categoryClustering.sum.toLong
+        categoryClusteringSize <- categoryClustering
       } yield (categorySize - categoryClusteringSize) * categoryClusteringSize
 
-      summands.sum
+      summands.sum / 2
     }
 
     val trueNegatives = negatives - falseNegatives

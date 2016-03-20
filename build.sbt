@@ -21,7 +21,7 @@ val jodaTime = Seq(
 )
 val apacheCommonsMath = "org.apache.commons" % "commons-math3" % "3.2"
 val elki = "de.lmu.ifi.dbs.elki" % "elki" % "0.7.1"
-
+val scalatest = "org.scalatest" %% "scalatest" % "2.2.6"
 
 val storage = (project in file("storage"))
   .settings(commonSettings: _*)
@@ -36,4 +36,4 @@ val `document-clustering` = (project in file("."))
   .settings(commonSettings: _*)
   .aggregate(storage, scraper)
   .dependsOn(storage, scraper)
-  .settings(libraryDependencies ++= Seq(apacheCommonsMath, elki))
+  .settings(libraryDependencies ++= Seq(apacheCommonsMath, elki, scalatest))
