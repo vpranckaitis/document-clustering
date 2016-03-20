@@ -81,7 +81,7 @@ object Clustering extends App {
   clusters foreach { ds => ds foreach { d => println(s"${d.article.category}: ${d.article.title}") }; println("------------") }
 
   println(s"Purity: ${ClusteringEvaluation.purity(clusterCategories)}")
-  println(s"Precission: ${ClusteringEvaluation.precission(clusterCategories)}")
+  println(s"Precision: ${ClusteringEvaluation.precision(clusterCategories)}")
   println(s"Recall: ${ClusteringEvaluation.recall(clusterCategories)}")
   println(s"F1: ${ClusteringEvaluation.F1(clusterCategories)}")
 }

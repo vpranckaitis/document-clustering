@@ -43,9 +43,9 @@ object ClusteringEvaluation {
     PositivesAndNegatives(truePositives, falsePositives, trueNegatives, falseNegatives)
   }
 
-  def precission(clusters: Seq[Seq[(String, Int)]]): Double = precission(positivesAndNegatives(clusters))
+  def precision(clusters: Seq[Seq[(String, Int)]]): Double = precision(positivesAndNegatives(clusters))
 
-  private def precission(pns: PositivesAndNegatives): Double = {
+  private def precision(pns: PositivesAndNegatives): Double = {
     import pns._
     tp.toDouble / (tp + fp)
   }
@@ -59,7 +59,7 @@ object ClusteringEvaluation {
 
   def F1(clusters: Seq[Seq[(String, Int)]]): Double = {
     val pns = positivesAndNegatives(clusters)
-    val p = precission(pns)
+    val p = precision(pns)
     val r = recall(pns)
     2 * p * r / (p + r)
   }
