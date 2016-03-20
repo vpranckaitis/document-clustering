@@ -64,8 +64,10 @@ object Clustering extends App {
       def getDocument(it: DBIDRef) = database.getBundle(it).data(1).asInstanceOf[Document]
       def iterate(it: DBIDIter): Stream[Document] = if (it.valid) getDocument(it) #:: iterate(it.advance()) else Stream.empty
 
-      val clusters = iterate(c.getIDs.iter()).toSeq
-      clusters
+      val cluster = iterate(c.getIDs.iter()).toSeq
+
+      val mean = c.getModel.getMean
+      cluster map { x => (x, SparseCosineDistanceFunction.STATIC.distance(mean, x)) } sortBy { _._2 }
     }
 
     println((System.currentTimeMillis() - t) * 0.001)
@@ -74,11 +76,11 @@ object Clustering extends App {
   }
   val clusters = Await.result(clustersF, Duration.Inf).toSeq
 
-  val clusterCategories = clusters map { x => (x groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse) }
+  val clusterCategories = clusters map { x => (x.unzip._1 groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse) }
   clusterCategories foreach { c => println((c mkString "\n") + "\n---------") }
 
   println("##################")
-  clusters foreach { ds => ds foreach { d => println(s"${d.article.category}: ${d.article.title}") }; println("------------") }
+  clusters foreach { ds => ds foreach { case (d, dist) => println(f"${dist}%1.4f ${d.article.category}: ${d.article.title}") }; println("------------") }
 
   println(s"Purity: ${ClusteringEvaluation.purity(clusterCategories)}")
   println(s"Precision: ${ClusteringEvaluation.precision(clusterCategories)}")
