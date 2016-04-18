@@ -63,4 +63,37 @@ object ClusteringEvaluation {
     val r = recall(pns)
     2 * p * r / (p + r)
   }
+
+  def entropy(clusters: Seq[Seq[(String, Int)]]): Double = {
+    def log2(x: Double) = Math.log(x) / Math.log(2)
+
+    val categoriesCount = clusters.flatten.distinct.size
+    val elementCount = clusters.flatten.unzip._2.sum
+    val addends = for {
+      cluster <- clusters
+      clusterSize = cluster.unzip._2.sum.toDouble
+      clusterCategoryCount <- cluster.unzip._2
+    } yield clusterCategoryCount * log2(clusterCategoryCount / clusterSize)
+
+    -addends.sum / (elementCount * log2(categoriesCount))
+  }
+
+  def averageEntropy(clusters: Seq[Seq[(String, Int)]]): Double = {
+    def log2(x: Double) = Math.log(x) / Math.log(2)
+
+    def basicEntropy(xs: Seq[Int]) = {
+      val n = xs.sum.toDouble
+      -(xs map { x => (x / n) * log2(x / n) }).sum
+    }
+
+    val elementCount = clusters.flatten.unzip._2.sum
+
+    val addends = for {
+      cluster <- clusters
+      clusterSize = cluster.unzip._2.sum.toDouble
+      clusterCategoryCounts = cluster.unzip._2
+    } yield basicEntropy(clusterCategoryCounts) * clusterSize / elementCount
+
+    addends.sum
+  }
 }

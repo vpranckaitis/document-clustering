@@ -17,4 +17,6 @@ class ClusteringEvaluationSpec extends FlatSpec with Matchers {
 
     ClusteringEvaluation.positivesAndNegatives(clusters) should equal (expected)
   }
+
+
 }
