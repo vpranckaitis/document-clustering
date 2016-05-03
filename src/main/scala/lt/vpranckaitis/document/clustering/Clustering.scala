@@ -27,7 +27,7 @@ object Clustering extends App {
     println(s"Article count: ${articles.size}, dimensionality: $dimensionality")
 
     val t = System.currentTimeMillis()
-    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.KMeansPlusPlus(555))
+    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.KMeansPlusPlus(999999))
     val result = clusterer.clusterize(featureVectors.documents)
 
     println((System.currentTimeMillis() - t) * 0.001)
@@ -51,4 +51,5 @@ object Clustering extends App {
   println(s"F1: ${ClusteringEvaluation.F1(clusterCategories)}")
   println(s"Average entropy: ${ClusteringEvaluation.averageEntropy(clusterCategories)}")
   println(s"Clustering entropy: ${ClusteringEvaluation.entropy(clusterCategories)}")
+  println(s"Weighted average cluster distance: ${ClusteringEvaluation.weightedAverageClusterDistance(clusters)}")
 }

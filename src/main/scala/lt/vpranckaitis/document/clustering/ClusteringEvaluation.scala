@@ -96,4 +96,14 @@ object ClusteringEvaluation {
 
     addends.sum
   }
+
+  def weightedAverageClusterDistance(clusters: Seq[Seq[(Document, Double)]]): Double = {
+    def average(xs: Seq[Double]) = xs.sum / xs.size
+    val addends = for {
+      c <- clusters
+      averageDistance = average(c.unzip._2)
+      weighted = averageDistance * c.size
+    } yield weighted
+    addends.sum / clusters.flatten.size
+  }
 }
