@@ -16,6 +16,7 @@ object Clustering extends App {
     val featureVectors =
       FeatureSelection(articles).
         split().
+        toLowercase().
         lengthAtLeast(3).
         stem().
         termFrequencyInverseDocumentFrequency().
