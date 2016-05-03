@@ -44,11 +44,26 @@ object FeatureSelection {
 
     def termFrequency(): Valued = {
       val termFrequencyArrays = tokenArrays map { tokens =>
-        val features = tokens groupBy { identity } mapValues { _.length.toDouble }
-        features.toArray
+        val tf = tokens groupBy { identity } mapValues { _.length.toDouble }
+        tf.toArray
       }
 
       new Valued(articles, termFrequencyArrays, log :+ "termFrequency()")
+    }
+
+    def termFrequencyInverseDocumentFrequency(): Valued = {
+      val n = articles.size
+      val termAppearances = (tokenArrays map { _.distinct }).flatten groupBy { identity } mapValues { _.size }
+      val idfs = termAppearances map { case (token, ni) => (token, Math.log(n.toDouble / ni)) }
+
+      val termFrequencyArrays = tokenArrays map { tokens =>
+        val tfs = tokens groupBy { identity } mapValues { _.length.toDouble }
+        val tfIdfs = tfs map { case (token, tf) => (token, tf * idfs(token)) }
+
+        tfIdfs.toArray
+      }
+
+      new Valued(articles, termFrequencyArrays, log :+ "termFrequencyInverseDocumentFrequency()")
     }
   }
 

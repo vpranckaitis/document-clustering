@@ -18,7 +18,7 @@ object Clustering extends App {
         split().
         lengthAtLeast(3).
         stem().
-        termFrequency().
+        termFrequencyInverseDocumentFrequency().
         normalize().
         toFeatureVectors()
 
