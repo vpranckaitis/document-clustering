@@ -21,7 +21,7 @@ object Scraper extends App with StrictLogging {
         .timeout(15000)
   }
 
-  val future = new Z15minScraper(storage, browser).scrape("http://www.15min.lt/ajax/articles/list?offset=2016-02-01 16:57:17")
+  val future = new AlfaScraper(storage, browser).scrape()
 
   logger.info(Await.result(future, Duration.Inf).toString)
 }
