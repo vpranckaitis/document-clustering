@@ -9,15 +9,17 @@ object Experiment {
   def apply(datasetId: Int,
             date: DateTime,
             configuration: String,
-            evaluation: String): Experiment =
-    Experiment(None, datasetId, date, configuration, evaluation)
+            evaluation: String,
+            comment: String): Experiment =
+    Experiment(None, datasetId, date, configuration, evaluation, comment)
 }
 
 case class Experiment(id: Option[Int],
                       datasetId: Int,
                       date: DateTime,
                       configuration: String,
-                      evaluation: String
+                      evaluation: String,
+                      comment: String
                    ) extends Storable
 
 class Experiments(tag: Tag) extends Table[Experiment](tag, "experiments") {
@@ -31,8 +33,10 @@ class Experiments(tag: Tag) extends Table[Experiment](tag, "experiments") {
 
   def evaluation = column[String]("evaluation")
 
-  def * = (id.?, datasetId, date, configuration, evaluation) <>
-    ((Experiment.apply: (Option[Int], Int, DateTime, String, String) => Experiment).tupled, Experiment.unapply)
+  def comment = column[String]("comment")
+
+  def * = (id.?, datasetId, date, configuration, evaluation, comment) <>
+    ((Experiment.apply: (Option[Int], Int, DateTime, String, String, String) => Experiment).tupled, Experiment.unapply)
 }
 
 object experimentsQuery extends TableQuery(new Experiments(_)) {
