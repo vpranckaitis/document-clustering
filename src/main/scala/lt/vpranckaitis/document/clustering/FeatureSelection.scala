@@ -8,9 +8,16 @@ import org.tartarus.snowball.ext.LithuanianStemmer
 object FeatureSelection {
   private val SplitPattern1 =  """[\s\.,!?\(\)\-–—„“":]+"""
 
-  class Raw private[FeatureSelection] (articles: Seq[Article], log: Vector[String]) {
+  class CompleteArticles private[FeatureSelection] (articles: Seq[Article], log: Vector[String]) {
+    def takeText(): Raw = {
+      val texts = articles map { _.text }
+      new Raw(articles, texts, log :+ "takeText()")
+    }
+  }
+
+  class Raw private[FeatureSelection] (articles: Seq[Article], texts: Seq[String], log: Vector[String]) {
     def split(): Tokenized = {
-      val tokens = articles map { _.text split SplitPattern1 filter { _.length > 0 } }
+      val tokens = texts map { _ split SplitPattern1 filter { _.length > 0 } }
       new Tokenized(articles, tokens, log :+ s"split($SplitPattern1)")
     }
   }
@@ -111,6 +118,6 @@ object FeatureSelection {
   case class FeatureVectors(documents: Seq[Document], index: Map[String, Int], log: Vector[String])
 
   def apply(articles: Seq[Article]) = {
-    new Raw(articles, Vector.empty)
+    new CompleteArticles(articles, Vector.empty)
   }
 }

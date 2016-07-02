@@ -15,6 +15,7 @@ object Clustering extends App {
 
     val featureVectors =
       FeatureSelection(articles).
+        takeText().
         split().
         toLowercase().
         lengthAtLeast(3).
