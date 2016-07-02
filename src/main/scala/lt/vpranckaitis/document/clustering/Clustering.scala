@@ -11,7 +11,7 @@ object Clustering extends App {
 
   val storage = new Storage
 
-  val resultsF = storage.getArticlesByDataset(1) map { articles =>
+  val resultsF = storage.getArticlesByDataset(2) map { articles =>
 
     val featureVectors =
       FeatureSelection(articles).
@@ -21,6 +21,8 @@ object Clustering extends App {
         lengthAtLeast(3).
         stem().
         termFrequencyInverseDocumentFrequency().
+        //leaveTermsWithHighestValues(0.25).
+        leaveNHighestTerms(100).
         normalize().
         toFeatureVectors()
 
@@ -29,7 +31,7 @@ object Clustering extends App {
     println(s"Article count: ${articles.size}, dimensionality: $dimensionality")
 
     val t = System.currentTimeMillis()
-    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.KMeansPlusPlus(999999))
+    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.Random(999999))
     val result = clusterer.clusterize(featureVectors.documents)
 
     println((System.currentTimeMillis() - t) * 0.001)

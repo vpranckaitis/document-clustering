@@ -85,6 +85,26 @@ object FeatureSelection {
       new Valued(articles, filtered, log :+ s"valueAtMost($x)")
     }
 
+    def leaveTermsWithHighestValues(percentile: Double) = {
+      val filtered = featureArrays map { x =>
+        if (x.size > 0) {
+          val sortedValues = x.unzip._2.sorted(Ordering[Double].reverse)
+          val thresholdValueIndex = Math.round(x.size * percentile).toInt
+          val safeThresholdValueIndex = Math.max(Math.min(x.size - 1, thresholdValueIndex), 0)
+          val thresholdValue = sortedValues(safeThresholdValueIndex)
+          x filterNot { _._2 < thresholdValue }
+        } else {
+          x
+        }
+      }
+      new Valued(articles, filtered, log :+ s"leaveTermsWithHighestValues($percentile)")
+    }
+
+    def leaveNHighestTerms(n: Int) = {
+      val filtered = featureArrays map { x => x.sortBy(_._2)(Ordering[Double].reverse) take n }
+      new Valued(articles, filtered, log :+ s"leaveNHighestTerms($n)")
+    }
+
     def normalize() = {
       def normalizeArray(xs: Array[(String, Double)]) = {
         val squaredLength = (xs.unzip._2 map { x => x*x }).sum
