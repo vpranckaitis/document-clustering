@@ -23,9 +23,11 @@ val apacheCommonsMath = "org.apache.commons" % "commons-math3" % "3.2"
 val elki = "de.lmu.ifi.dbs.elki" % "elki" % "0.7.1"
 val scalatest = "org.scalatest" %% "scalatest" % "2.2.6"
 
+val sprayJson = "io.spray" %%  "spray-json" % "1.3.2"
+
 val storage = (project in file("storage"))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= slick ++ jodaTime ++ Seq(postgreSqlDriver, scalaLogging, logback))
+  .settings(libraryDependencies ++= slick ++ jodaTime ++ Seq(postgreSqlDriver, scalaLogging, logback, sprayJson))
 
 val scraper = (project in file("scraper"))
   .settings(commonSettings: _*)

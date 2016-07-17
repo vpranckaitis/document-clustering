@@ -2,6 +2,7 @@ package lt.vpranckaitis.document.clustering
 
 import java.util.Locale
 
+import lt.vpranckaitis.document.clustering.dto.Document
 import lt.vpranckaitis.document.clustering.storage.schema.Article
 import org.tartarus.snowball.ext.LithuanianStemmer
 
@@ -40,12 +41,12 @@ object FeatureSelection {
     }
 
     def lengthAtLeast(from: Int): Tokenized  = {
-      val filtered = tokenArrays map { _ filter { _.size >= from } }
+      val filtered = tokenArrays map { _ filter { _.length >= from } }
       new Tokenized(articles, filtered, log :+ s"lengthAtLeast($from)")
     }
 
     def lengthAtMost(to: Int): Tokenized  = {
-      val filtered = tokenArrays map { _ filter { _.size <= to } }
+      val filtered = tokenArrays map { _ filter { _.length <= to } }
       new Tokenized(articles, filtered, log :+ s"lengthAtMost($to)")
     }
 
@@ -60,7 +61,7 @@ object FeatureSelection {
 
     def termFrequencyInverseDocumentFrequency(): Valued = {
       val n = articles.size
-      val termAppearances = (tokenArrays map { _.distinct }).flatten groupBy { identity } mapValues { _.size }
+      val termAppearances = tokenArrays flatMap { _.distinct } groupBy { identity } mapValues { _.size }
       val idfs = termAppearances map { case (token, ni) => (token, Math.log(n.toDouble / ni)) }
 
       val termFrequencyArrays = tokenArrays map { tokens =>
@@ -87,10 +88,10 @@ object FeatureSelection {
 
     def leaveTermsWithHighestValues(percentile: Double) = {
       val filtered = featureArrays map { x =>
-        if (x.size > 0) {
+        if (x.length > 0) {
           val sortedValues = x.unzip._2.sorted(Ordering[Double].reverse)
-          val thresholdValueIndex = Math.round(x.size * percentile).toInt
-          val safeThresholdValueIndex = Math.max(Math.min(x.size - 1, thresholdValueIndex), 0)
+          val thresholdValueIndex = Math.round(x.length * percentile).toInt
+          val safeThresholdValueIndex = Math.max(Math.min(x.length - 1, thresholdValueIndex), 0)
           val thresholdValue = sortedValues(safeThresholdValueIndex)
           x filterNot { _._2 < thresholdValue }
         } else {
@@ -135,7 +136,7 @@ object FeatureSelection {
     }
   }
 
-  case class FeatureVectors(documents: Seq[Document], index: Map[String, Int], log: Vector[String])
+  case class FeatureVectors(documents: Seq[Document], index: Map[String, Int], logMessage: Vector[String])
 
   def apply(articles: Seq[Article]) = {
     new CompleteArticles(articles, Vector.empty)

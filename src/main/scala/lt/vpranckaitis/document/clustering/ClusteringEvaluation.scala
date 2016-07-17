@@ -1,7 +1,27 @@
 package lt.vpranckaitis.document.clustering
 
+import lt.vpranckaitis.document.clustering.dto.{Document, Evaluation}
+
 object ClusteringEvaluation {
   case class PositivesAndNegatives(tp: Long, fp: Long, tn: Long, fn: Long)
+
+  def evaluate(clusters: Seq[Seq[(Document, Double)]]) = {
+    val clusterCategories = clusters map { x =>
+      (x.unzip._1 groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
+    }
+
+    val purity = ClusteringEvaluation.purity(clusterCategories)
+    val precision = ClusteringEvaluation.precision(clusterCategories)
+    val recall = ClusteringEvaluation.recall(clusterCategories)
+    val f1 = ClusteringEvaluation.F1(clusterCategories)
+    val averageEntropy = ClusteringEvaluation.averageEntropy(clusterCategories)
+    val clusteringEntropy = ClusteringEvaluation.entropy(clusterCategories)
+    val weightedAverageClusterDistance = ClusteringEvaluation.weightedAverageClusterDistance(clusters)
+
+    Evaluation(purity = purity, precision = precision, recall = recall, f1 = f1,
+      averageEntropy = averageEntropy, clusteringEntropy = clusteringEntropy,
+      weightedAverageClusterDistance = weightedAverageClusterDistance)
+  }
 
   def purity(clusters: Seq[Seq[(String, Int)]]) = {
     val count = (clusters flatMap { _.unzip._2 }).sum

@@ -1,4 +1,4 @@
-package lt.vpranckaitis.document.clustering
+package lt.vpranckaitis.document.clustering.dto
 
 import de.lmu.ifi.dbs.elki.data.SparseDoubleVector
 import lt.vpranckaitis.document.clustering.storage.schema.Article

@@ -8,15 +8,17 @@ import slick.lifted.{TableQuery, Tag}
 object Experiment {
   def apply(datasetId: Int,
             date: DateTime,
+            runtime: Long,
             configuration: String,
             evaluation: String,
             comment: String): Experiment =
-    Experiment(None, datasetId, date, configuration, evaluation, comment)
+    Experiment(None, datasetId, date, runtime, configuration, evaluation, comment)
 }
 
 case class Experiment(id: Option[Int],
                       datasetId: Int,
                       date: DateTime,
+                      runtime: Long,
                       configuration: String,
                       evaluation: String,
                       comment: String
@@ -29,14 +31,16 @@ class Experiments(tag: Tag) extends Table[Experiment](tag, "experiments") {
 
   def date = column[DateTime]("date")
 
+  def runtime = column[Long]("runtime")
+
   def configuration = column[String]("configuration")
 
   def evaluation = column[String]("evaluation")
 
   def comment = column[String]("comment")
 
-  def * = (id.?, datasetId, date, configuration, evaluation, comment) <>
-    ((Experiment.apply: (Option[Int], Int, DateTime, String, String, String) => Experiment).tupled, Experiment.unapply)
+  def * = (id.?, datasetId, date, runtime, configuration, evaluation, comment) <>
+    ((Experiment.apply: (Option[Int], Int, DateTime, Long, String, String, String) => Experiment).tupled, Experiment.unapply)
 }
 
 object experimentsQuery extends TableQuery(new Experiments(_)) {

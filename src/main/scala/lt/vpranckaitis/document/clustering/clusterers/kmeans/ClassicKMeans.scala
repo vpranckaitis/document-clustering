@@ -7,11 +7,13 @@ import de.lmu.ifi.dbs.elki.database.StaticArrayDatabase
 import de.lmu.ifi.dbs.elki.database.ids.{DBIDIter, DBIDRef}
 import de.lmu.ifi.dbs.elki.datasource.MultipleObjectsBundleDatabaseConnection
 import de.lmu.ifi.dbs.elki.datasource.bundle.MultipleObjectsBundle
-import lt.vpranckaitis.document.clustering.{Document, SparseCosineDistanceFunction}
+import lt.vpranckaitis.document.clustering.SparseCosineDistanceFunction
+import lt.vpranckaitis.document.clustering.clusterers.Clusterer
+import lt.vpranckaitis.document.clustering.dto.Document
 
 import scala.collection.JavaConversions._
 
-class ClassicKMeans(k: Int, distanceFunction: DistanceFunction, initial: InitialMeans) {
+class ClassicKMeans(k: Int, distanceFunction: DistanceFunction, initial: InitialMeans) extends Clusterer {
 
   val MaxIterations = 10000
   val logMessage = s"ClassicKMeans(k=$k, distanceFunction=${distanceFunction.logMessage}, initialMeans=${initial.logMessage})"
@@ -27,7 +29,7 @@ class ClassicKMeans(k: Int, distanceFunction: DistanceFunction, initial: Initial
     database
   }
 
-  def clusterize(documents: Seq[Document]): Results = {
+  def clusterize(documents: Seq[Document]): ClusteringResults = {
     val clusterer = new KMeansMacQueen(distanceFunction.getAlgorithm(), k, MaxIterations, initial.getAlgorithm())
 
     val database = buildDatabase(documents)
@@ -42,6 +44,6 @@ class ClassicKMeans(k: Int, distanceFunction: DistanceFunction, initial: Initial
       cluster map { x => (x, SparseCosineDistanceFunction.STATIC.distance(mean, x)) } sortBy { _._2 }
     }
 
-    Results(clusters, logMessage)
+    ClusteringResults(clusters, logMessage)
   }
 }
