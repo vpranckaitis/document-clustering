@@ -10,6 +10,8 @@ object ClusteringEvaluation {
       (x.unzip._1 groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
     }
 
+    println(clusterCategories)
+
     val purity = ClusteringEvaluation.purity(clusterCategories)
     val precision = ClusteringEvaluation.precision(clusterCategories)
     val recall = ClusteringEvaluation.recall(clusterCategories)
@@ -25,7 +27,14 @@ object ClusteringEvaluation {
 
   def purity(clusters: Seq[Seq[(String, Int)]]) = {
     val count = (clusters flatMap { _.unzip._2 }).sum
-    val sumOfMaximums = (clusters map { _.unzip._2.max }).sum
+    val maximums = clusters map { x =>
+      val counts = x.unzip._2
+      if (counts.nonEmpty)
+        counts.max
+      else
+        0
+    }
+    val sumOfMaximums = maximums.sum
     sumOfMaximums.toDouble / count
   }
 
