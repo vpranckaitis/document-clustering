@@ -1,6 +1,6 @@
 package lt.vpranckaitis.document.clustering
 
-import lt.vpranckaitis.document.clustering.clusterers.em.EM
+import lt.vpranckaitis.document.clustering.clusterers.kmeans.{ClassicKMeans, DistanceFunction, InitialMeans}
 import lt.vpranckaitis.document.clustering.storage.Storage
 
 import scala.concurrent.Await
@@ -10,10 +10,10 @@ object Clustering extends App {
 
   val experimentService = new ExperimentService(new Storage)
 
-  val future = experimentService.consoleOutput.runExperiment(1) { articles =>
+  val future = experimentService.runExperiment(1) { articles =>
 
     val featureVectors =
-      FeatureSelection(articles take 200).
+      FeatureSelection(articles).
         takeText().
         split().
         toLowercase().
@@ -25,10 +25,10 @@ object Clustering extends App {
         normalize().
         toFeatureVectors()
 
-    //val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.Random(999999))
-    val clusterer = new EM(10)
+    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.Random(999999))
+    //val clusterer = new EM(10)
 
-    (featureVectors, clusterer)
+    (featureVectors, clusterer, "test")
   }
 
   Await.result(future, Duration.Inf)

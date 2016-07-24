@@ -11,7 +11,8 @@ class Storage {
   def save(o: Storable) = {
     val action = o match  {
       case a: Article => articlesQuery += a
-      case e: Experiment => experimentsQuery += e
+      case e: Experiment => experimentsQuery returning experimentsQuery.map(_.id) += e
+      case ca: ClusterArticle => clustersArticlesQuery += ca
     }
 
     db.run(action)
