@@ -2,12 +2,10 @@ package lt.vpranckaitis.document.clustering.dto
 
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
-import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, RootJsonFormat}
+import spray.json._
+
 
 object ExtendedJsonProtocol extends DefaultJsonProtocol {
-  implicit val configurationFormat = jsonFormat2(Configuration)
-  implicit val EvaluationFormat = jsonFormat7(Evaluation)
-  implicit val ExperimentSummaryFormat = jsonFormat6(ExperimentSummary)
 
   implicit object DateJsonFormat extends RootJsonFormat[DateTime] {
 
@@ -20,4 +18,8 @@ object ExtendedJsonProtocol extends DefaultJsonProtocol {
       case _ => throw new DeserializationException("Error deserializing DateTime")
     }
   }
+
+  implicit val configurationFormat = jsonFormat2(Configuration)
+  implicit val EvaluationFormat = jsonFormat7(Evaluation)
+  implicit val ExperimentSummaryFormat = jsonFormat6(ExperimentSummary)
 }

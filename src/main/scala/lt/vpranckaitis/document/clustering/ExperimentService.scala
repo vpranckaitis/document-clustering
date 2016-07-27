@@ -1,5 +1,6 @@
 package lt.vpranckaitis.document.clustering
 
+import com.typesafe.scalalogging.StrictLogging
 import lt.vpranckaitis.document.clustering.FeatureSelection.FeatureVectors
 import lt.vpranckaitis.document.clustering.clusterers.Clusterer
 import lt.vpranckaitis.document.clustering.clusterers.kmeans.ClusteringResults
@@ -13,7 +14,11 @@ import spray.json._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ExperimentService(storage: Storage) {
+object ExperimentService {
+  type Experiment = (Seq[Article]) => (FeatureSelection.FeatureVectors, Clusterer, String)
+}
+
+class ExperimentService(storage: Storage) extends StrictLogging {
 
   lazy val consoleOutput = new ConsoleOutputExperimentService(storage)
 
@@ -62,7 +67,7 @@ class ExperimentService(storage: Storage) {
     } yield ()
   }
 
-  def runExperiment(dataSet: Int)(f: Seq[Article] => (FeatureVectors, Clusterer, String)): Future[Unit] = {
+  def runExperiment(dataSet: Int)(f: ExperimentService.Experiment): Future[Unit] = {
     storage.getArticlesByDataset(dataSet) flatMap { articles =>
       val (featureVectors, clusterer, comment) = f(articles)
 
@@ -71,6 +76,19 @@ class ExperimentService(storage: Storage) {
       val experimentResults = getExperimentSummary(dataSet, featureVectors, clusterer, clusteringResults, runtime, comment)
       println(experimentResults)
       saveExperiment(clusteringResults, experimentResults)
+    }
+  }
+
+  def runExperiments(dataSet: Int)(fs: Seq[ExperimentService.Experiment]): Future[Int] = {
+    fs.foldLeft(Future(0)) { (acc, f) =>
+      for {
+        count <- acc
+        newCount <- runExperiment(dataSet)(f) map { _ => count + 1 } recover {
+          case ex =>
+            logger.error("Failed experiment", ex)
+            count
+        }
+      } yield newCount
     }
   }
 

@@ -1,7 +1,10 @@
 package lt.vpranckaitis.document.clustering
 
-import lt.vpranckaitis.document.clustering.clusterers.kmeans.{ClassicKMeans, DistanceFunction, InitialMeans}
+import lt.vpranckaitis.document.clustering.ExperimentService.Experiment
+import lt.vpranckaitis.document.clustering.clusterers.DistanceFunction
+import lt.vpranckaitis.document.clustering.clusterers.kmeans.{ClassicKMeans, InitialMeans}
 import lt.vpranckaitis.document.clustering.storage.Storage
+import lt.vpranckaitis.document.clustering.storage.schema.Article
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -10,26 +13,31 @@ object Clustering extends App {
 
   val experimentService = new ExperimentService(new Storage)
 
-  val future = experimentService.runExperiment(1) { articles =>
-
+  val experiments: Seq[Experiment] = for {
+    seed <- Seq(45, 72468, 92438, 242, 85436)
+  } yield { articles: Seq[Article] =>
     val featureVectors =
       FeatureSelection(articles).
         takeText().
         split().
         toLowercase().
-        lengthAtLeast(3).
+        lengthAtLeast(1).
         stem().
         termFrequencyInverseDocumentFrequency().
-        //leaveTermsWithHighestValues(0.25).
-        leaveNHighestTerms(100).
         normalize().
         toFeatureVectors()
 
-    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.Random(999999))
-    //val clusterer = new EM(10)
+    val clusterer = new ClassicKMeans(10, DistanceFunction.Cosine, InitialMeans.Random(seed))
 
-    (featureVectors, clusterer, "test")
+    (featureVectors, clusterer, "different seed experiment")
   }
 
-  Await.result(future, Duration.Inf)
+  //---------------------------
+
+  println(s"Experiment count: ${experiments.size}")
+
+  val experimentsRun = experimentService.consoleOutput.runExperiments(3)(experiments)
+  val successfulExperimentsCount = Await.result(experimentsRun, Duration.Inf)
+
+  println(s"Successful experiments: ${successfulExperimentsCount}/${experiments.size}")
 }
