@@ -1,4 +1,4 @@
-package lt.vpranckaitis.document.clustering.clusterers.kmeans
+package lt.vpranckaitis.document.clustering.clusterers
 
 import de.lmu.ifi.dbs.elki.distance.distancefunction.AbstractSpatialDistanceFunction
 import lt.vpranckaitis.document.clustering.SparseCosineDistanceFunction

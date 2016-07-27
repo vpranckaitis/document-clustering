@@ -2,7 +2,7 @@ package lt.vpranckaitis.document.clustering.clusterers.kmeans
 
 import de.lmu.ifi.dbs.elki.algorithm.clustering.kmeans.KMeansMacQueen
 import lt.vpranckaitis.document.clustering.SparseCosineDistanceFunction
-import lt.vpranckaitis.document.clustering.clusterers.Clusterer
+import lt.vpranckaitis.document.clustering.clusterers.{Clusterer, DistanceFunction}
 import lt.vpranckaitis.document.clustering.dto.Document
 
 import scala.collection.JavaConversions._
