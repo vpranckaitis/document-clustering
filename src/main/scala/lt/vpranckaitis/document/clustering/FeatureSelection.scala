@@ -14,6 +14,11 @@ object FeatureSelection {
       val texts = articles map { _.text }
       new Raw(articles, texts, log :+ "takeText()")
     }
+
+    def takeTitleAndDescription(): Raw = {
+      val texts = articles map { a => a.title + " " + a.description }
+      new Raw(articles, texts, log :+ "takeTitleAndDescription()")
+    }
   }
 
   class Raw private[FeatureSelection] (articles: Seq[Article], texts: Seq[String], log: Vector[String]) {
