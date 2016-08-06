@@ -1,10 +1,14 @@
 package lt.vpranckaitis.document.clustering.clusterers.hierarchical
 
-import de.lmu.ifi.dbs.elki.algorithm.clustering.hierarchical.AGNES
+import de.lmu.ifi.dbs.elki.algorithm.clustering.hierarchical.{AGNES, PointerDensityHierarchyRepresentationResult}
+import de.lmu.ifi.dbs.elki.algorithm.clustering.hierarchical.extraction.{ExtractFlatClusteringFromHierarchy, HDBSCANHierarchyExtraction, SimplifiedHierarchyExtraction}
+import de.lmu.ifi.dbs.elki.data.Clustering
+import de.lmu.ifi.dbs.elki.data.model.DendrogramModel
 import lt.vpranckaitis.document.clustering.clusterers.kmeans.ClusteringResults
 import lt.vpranckaitis.document.clustering.clusterers.{Clusterer, DistanceFunction}
 import lt.vpranckaitis.document.clustering.dto.Document
 
+import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 
 class Hierarchical(distanceFunction: DistanceFunction, linkageMethod: LinkageMethod, extractionMethod: ExtractionMethod) extends Clusterer {
@@ -17,9 +21,9 @@ class Hierarchical(distanceFunction: DistanceFunction, linkageMethod: LinkageMet
 
     val clusteringAlgorithm = new AGNES(distanceFunction.getAlgorithm, linkageMethod.getAlgorithm())
 
-    val result = extractionMethod.getAlgorithm(clusteringAlgorithm).run(database)
+    val results = extractionMethod.getAlgorithm(clusteringAlgorithm).run(database)
 
-    val clusters = result.getToplevelClusters map { c =>
+    val clusters = results.getToplevelClusters map { c =>
       val cluster = extractClusters(database)(c)
 
       cluster map { (_, 0.0) }

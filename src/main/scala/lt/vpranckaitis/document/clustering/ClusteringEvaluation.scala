@@ -10,6 +10,7 @@ object ClusteringEvaluation {
       (x.unzip._1 groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
     }
 
+    println(clusterCategories.size)
     println(clusterCategories)
 
     val purity = ClusteringEvaluation.purity(clusterCategories)
