@@ -31,11 +31,14 @@ class ExperimentService(storage: Storage) extends StrictLogging {
     val configuration = Configuration(featureVectors.logMessage, clusterer.logMessage)
     val evaluation = ClusteringEvaluation.evaluate(clusteringResults.clusters)
 
+    val clusterCount = clusteringResults.clusters.size
+
     ExperimentSummary(
       dataSet,
       DateTime.now,
       runtime,
       configuration,
+      Some(clusterCount),
       evaluation,
       comment)
   }
