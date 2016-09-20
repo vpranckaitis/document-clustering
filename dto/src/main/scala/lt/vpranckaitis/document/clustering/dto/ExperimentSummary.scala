@@ -7,6 +7,5 @@ case class ExperimentSummary(
     date: DateTime,
     runtime: Long,
     configuration: Configuration,
-    clusterCount: Option[Int],
     evaluation: Evaluation,
     comment: String)

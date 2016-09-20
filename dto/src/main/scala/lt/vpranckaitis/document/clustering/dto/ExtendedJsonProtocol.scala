@@ -21,5 +21,5 @@ object ExtendedJsonProtocol extends DefaultJsonProtocol {
 
   implicit val configurationFormat = jsonFormat2(Configuration)
   implicit val EvaluationFormat = jsonFormat7(Evaluation)
-  implicit val ExperimentSummaryFormat = jsonFormat7(ExperimentSummary)
+  implicit val ExperimentSummaryFormat = jsonFormat6(ExperimentSummary)
 }
