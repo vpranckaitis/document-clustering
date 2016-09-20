@@ -7,11 +7,12 @@ object ClusteringEvaluation {
 
   def evaluate(clusters: Seq[Seq[(Document, Double)]]) = {
     val clusterCategories = clusters map { x =>
-      (x.unzip._1 groupBy { _.article.category } mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
+      (x.unzip._1 map { x => CategoryMapper(x.article) } groupBy identity mapValues { _.size }).toSeq.sortBy(_._2)(Ordering[Int].reverse)
     }
 
     println(clusterCategories.size)
     println(clusterCategories)
+    println(clusterCategories.flatten.groupBy(_._1).mapValues(_.unzip._2.sum).toList.sortBy(_._2)(Ordering[Int].reverse))
 
     val purity = ClusteringEvaluation.purity(clusterCategories)
     val precision = ClusteringEvaluation.precision(clusterCategories)

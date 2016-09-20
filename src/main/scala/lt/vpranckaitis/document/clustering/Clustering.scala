@@ -16,13 +16,13 @@ object Clustering extends App {
   val experimentService = new ExperimentService(new Storage)
 
   val experiments: Seq[Experiment] = for {
-    k <- 10 to 10
-    //seed <- Seq(45, 72468, 92438, 242, 85436)
-    //initialMeans <- Seq(InitialMeans.Random(seed), InitialMeans.FarthestPoints(seed), InitialMeans.KMeansPlusPlus(seed))
+    k <- 9 to 9
+    seed <- Seq(45, 72468, 92438, 242, 85436)
+    initialMeans <- Seq(InitialMeans.Random(seed), InitialMeans.FarthestPoints(seed), InitialMeans.KMeansPlusPlus(seed))
   } yield { articles: Seq[Article] =>
     val featureVectors =
       FeatureSelection(articles).
-        takeTitleAndDescription().
+        takeText().
         split().
         toLowercase().
         lengthAtLeast(1).
@@ -31,9 +31,11 @@ object Clustering extends App {
         normalize().
         toFeatureVectors()
 
-    val clusterer = new Hierarchical(DistanceFunction.Cosine, LinkageMethod.Complete, ExtractionMethod.HDBSCANTargetK(k))
+    //val clusterer = new Hierarchical(DistanceFunction.Cosine, LinkageMethod.Complete, ExtractionMethod.HDBSCANTargetK(k))
+    //val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
+    val clusterer = new RandomClustering(k, seed)
 
-    (featureVectors, clusterer, "Title and description")
+    (featureVectors, clusterer, "MC, Hierarchical")
   }
 
   //---------------------------

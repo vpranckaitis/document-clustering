@@ -79,10 +79,16 @@ class ExperimentService(storage: Storage) extends StrictLogging {
     }
   }
 
-  def runExperiments(dataSet: Int)(fs: Seq[ExperimentService.Experiment]): Future[Int] = {
-    fs.foldLeft(Future(0)) { (acc, f) =>
+  def runExperiments(dataSets: Int*)(fs: Seq[ExperimentService.Experiment]): Future[Int] = {
+    val dataSetsWithFunctions = for {
+      dataSet <- dataSets
+      experimentFunction <- fs
+    } yield (dataSet, experimentFunction)
+
+    dataSetsWithFunctions.foldLeft(Future(0)) { (acc, dataSetWithFunction) =>
       for {
         count <- acc
+        (dataSet, f) = dataSetWithFunction
         newCount <- runExperiment(dataSet)(f) map { _ => count + 1 } recover {
           case ex =>
             logger.error("Failed experiment", ex)

@@ -154,6 +154,7 @@ class AlfaScraper(storage: Storage, browser: Browser) extends StrictLogging {
     }
     scrape match {
       case Success(article) =>
+        println(article)
         storage.save(article) recover {
           case ex =>
             logger.error("Failed saving", ex)
@@ -171,7 +172,7 @@ class AlfaScraper(storage: Storage, browser: Browser) extends StrictLogging {
 
   def scrape(): Future[Int] = {
     val urls = for {
-      page <- (2000 to 5000).toStream
+      page <- (1 to 9000).toStream
       archiveUrl = archiveUrlTemplate + page
       url <- ((browser.get(archiveUrl)) >> elements("a") >> attrs("href")("a")): Seq[String]
     } yield url
