@@ -32,8 +32,8 @@ object Clustering extends App {
         toFeatureVectors()
 
     //val clusterer = new Hierarchical(DistanceFunction.Cosine, LinkageMethod.Complete, ExtractionMethod.HDBSCANTargetK(k))
-    val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
-    //val clusterer = new RandomClustering(k, seed)
+    //val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
+    val clusterer = new RandomClustering(k, seed)
 
     (featureVectors, clusterer, "Category mapped, k-means")
   }
@@ -42,7 +42,7 @@ object Clustering extends App {
 
   println(s"Experiment count: ${experiments.size}")
 
-  val experimentsRun = experimentService.runExperiments(3)(experiments)
+  val experimentsRun = experimentService.consoleOutput.runExperiments(5)(experiments)
   val successfulExperimentsCount = Await.result(experimentsRun, Duration.Inf)
 
   println(s"Successful experiments: ${successfulExperimentsCount}/${experiments.size}")

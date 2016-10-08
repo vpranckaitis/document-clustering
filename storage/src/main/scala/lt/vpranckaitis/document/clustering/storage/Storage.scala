@@ -36,4 +36,21 @@ class Storage {
 
     db.run(q.result)
   }
+
+  def getExperimentsByCategory(source: String, category: String, subcategory: String, limit: Int = 100): Future[Seq[Article]] = {
+    val q = for {
+      a <- articlesQuery
+      if (a.source === source && a.category === category && a.subcategory === subcategory)
+    } yield a
+    db.run(q.take(limit).result)
+  }
+
+  def update(o: Article) = {
+    val q = for {
+      a <- articlesQuery
+      if (a.source === o.source && a.url === o.url)
+    } yield a
+
+    db.run(q.update(o))
+  }
 }

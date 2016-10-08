@@ -5,7 +5,9 @@ import lt.vpranckaitis.document.clustering.storage.schema.Article
 
 object CategoryMapper extends StrictLogging {
   private val Auto = "auto"
-  private val Naujienos = "naujienos"
+  private val Lietuva = "lietuva"
+  private val Pasaulis = "pasaulis"
+  private val Kriminalai = "kriminalai"
   private val Gyvenimas = "gyvenimas"
   private val Sportas = "sportas"
   private val Mokslas = "mokslas"
@@ -13,103 +15,87 @@ object CategoryMapper extends StrictLogging {
   private val Pramogos = "pramogos"
   private val Verslas = "verslas"
   private val Kultura = "kultura"
+  private val Kita = "kita"
 
   def apply(article: Article): String = {
-    article match {
-      case Article(_, "www.delfi.lt", _, "video", subcategory, _, _, _, _) =>
-        delfiVideo(subcategory)
-      case _ =>
-        val mapperBySource = sources(article.source)
-        mapperBySource(article.category)
+    article.source match {
+      case "www.delfi.lt" => delfi(article.category, article.subcategory)
+      case "www.15min.lt" => `15min`(article.category, article.subcategory)
+      case "www.alfa.lt" => alfa(article.category, article.subcategory)
     }
   }
 
-  private def default(s: String): String = {
-    logger.warn(s"Unrecognized category $s")
-    s
+  private val delfi = PartialFunction[(String, String), String] {
+    case ("auto", _) => Auto
+    case ("gyvenimas", _) => Gyvenimas
+    case ("krepsinis", _) => Sportas
+    case ("mokslas", _) => Mokslas
+    case ("pilietis", _) => Nuomones
+    case ("sportas", _) => Sportas
+    case ("veidai", _) => Pramogos
+    case ("verslas", _) => Verslas
+    case ("news", "crime") => Kriminalai
+    case ("news", "lithuania") => Lietuva
+    case ("news", "world") => Pasaulis
+    case ("news", "ringas") => Nuomones
+
+    case ("grynas", "gyvenimas") => Gyvenimas
+
+    case ("5braskes", "grazios") => Gyvenimas
+    case ("5braskes", "linksmos") => Pramogos
+    case ("5braskes", "konkursai") => Kita
+    case ("5braskes", _) => Gyvenimas
+
+    case ("video", "auto") => Auto
+    case ("video", "mokslas-ir-gamta") => Mokslas
+    case ("video", "pramogos") => Pramogos
+    case ("video", "sportas") => Sportas
+    case ("video", "verslas") => Verslas
+    case ("video", "aktualijos") => Kita
+    case ("video", "transliacijos") => Kita
+    case ("video", "sveikata-tv") => Kita
+    case ("video", "stilius") => Kita
+    case ("video", "laidos") => Kita
+
+    case e => logger.warn("delfi " + e); Kita
   }
 
-  private val delfi = Map(
-    "auto" -> Auto,
-    "es" -> Naujienos,
-    "gyvenimas" -> Gyvenimas,
-    "krepsinis" -> Sportas,
-    "lmz" -> Gyvenimas,
-    "mokslas" -> Mokslas,
-    "news" -> Naujienos,
-    "pilietis" -> Nuomones,
-    "projektai" -> Gyvenimas,
-    "sportas" -> Sportas,
-    "vasara" -> Naujienos,
-    "veidai" -> Pramogos,
-    "verslas" -> Verslas
-  ) withDefault default
+  private val `15min` = PartialFunction[(String, String), String] {
+    case ("24sek", _) => Sportas
+    case ("deuce", _) => Sportas
+    case ("sportas", _) => Sportas
+    case ("gazas", _) => Auto
+    case ("ikrauk", _) => Kita
+    case ("mokslasit", _) => Mokslas
+    case ("verslas", _) => Verslas
 
-  private val `15min` = Map(
-    "24sek" -> Sportas,
-    "deuce" -> Sportas,
-    "gazas" -> Auto,
-    "ikrauk" -> Nuomones,
-    "ji24" -> Gyvenimas,
-    "laima" -> Gyvenimas,
-    "mokslasit" -> Mokslas,
-    "naujiena" -> Naujienos,
-    "pasaulis-kiseneje" -> Kultura,
-    "sportas" -> Sportas,
-    "tavoroma" -> Kultura,
-    "verslas" -> Verslas,
-    "zmones" -> Pramogos
-  ) withDefault default
+    case ("naujiena", "lietuva") => Lietuva
+    case ("naujiena", "pasaulis") => Pasaulis
+    case ("naujiena", "nusikaltimaiirnelaimes") => Kriminalai
+    case ("naujiena", "nuomones") => Nuomones
+    case ("naujiena", "kultura") => Kultura
+    case ("naujiena", "sveikata") => Gyvenimas
 
-  private val alfa = Map(
-    "auto" -> Auto,
-    "gyvenimas" -> Gyvenimas,
-    "it" -> Mokslas,
-    "kriminalai" -> Naujienos,
-    "kultūra" -> Kultura,
-    "laisvalaikis" -> Pramogos,
-    "lietuva" -> Naujienos,
-    "nuomonės ir komentarai" ->	Nuomones,
-    "pasaulis" -> Naujienos,
-    "pramogos" -> Pramogos,
-    "sportas" -> Sportas,
-    "verslas" -> Verslas
-  ) withDefault default
+    case ("pasaulis-kiseneje", _) => Kita
 
-  private val `5braskes` = Map(
-    "grazios" -> Gyvenimas,
-    "karstos" -> Gyvenimas,
-    "konkursai" -> Pramogos,
-    "linksmos" -> Pramogos,
-    "skanios" -> Gyvenimas,
-    "sveikos" -> Gyvenimas
-  ) withDefault default
+    case ("zmones", _) => Pramogos
+    case ("ji24", _) => Gyvenimas
+    case e => logger.warn("15min " + e); Kita
+  }
 
-  private val grynas = Map(
-    "aplinka" -> Gyvenimas,
-    "gamta" -> Gyvenimas,
-    "gyvenimas" -> Gyvenimas,
-    "tv" -> Gyvenimas
-  ) withDefault default
-
-  private val delfiVideo = Map(
-    "aktualijos" -> Naujienos,
-    "auto" -> Auto,
-    "laidos" -> Pramogos,
-    "mokslas-ir-gamta" -> Mokslas,
-    "pramogos" -> Pramogos,
-    "sportas" -> Sportas,
-    "stilius" -> Gyvenimas,
-    "sveikata-tv" -> Gyvenimas,
-    "transliacijos" -> Gyvenimas,
-    "verslas" -> Verslas
-  ) withDefault default
-
-  private val sources = Map(
-    "www.15min.lt" -> `15min`,
-    "www.alfa.lt" -> alfa,
-    "www.delfi.lt" -> delfi,
-    "grynas.delfi.lt" -> grynas,
-    "www.5braskes.lt" -> `5braskes`
-  ) withDefaultValue { Map.empty[String, String] withDefault default }
+  private val alfa = PartialFunction[(String, String), String] {
+    case ("auto", _) => Auto
+    case ("gyvenimas", _) => Gyvenimas
+    case ("it", _) => Mokslas
+    case ("kriminalai", _) => Kriminalai
+    case ("kultūra", _) => Kultura
+    case ("lietuva", _) => Lietuva
+    case ("pasaulis", _) => Pasaulis
+    case ("nuomonės ir komentarai", _) => Nuomones
+    case ("pramogos", _) => Pramogos
+    case ("sportas", _) => Sportas
+    case ("verslas", _) => Verslas
+    case ("laisvalaikis", _) => Pramogos
+    case e => logger.warn("15min " + e); Kita
+  }
 }
