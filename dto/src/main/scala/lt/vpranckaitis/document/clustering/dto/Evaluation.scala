@@ -7,4 +7,5 @@ case class Evaluation(
     f1: Double,
     averageEntropy: Double,
     clusteringEntropy: Double,
-    weightedAverageClusterDistance: Double)
+    weightedAverageClusterDistance: Double,
+    clustersSize: Option[ClustersSize])

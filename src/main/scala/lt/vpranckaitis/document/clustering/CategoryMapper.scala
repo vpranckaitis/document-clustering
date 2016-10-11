@@ -40,6 +40,7 @@ object CategoryMapper extends StrictLogging {
     case ("news", "ringas") => Nuomones
 
     case ("grynas", "gyvenimas") => Gyvenimas
+    case ("grynas", _) => Kita
 
     case ("5braskes", "grazios") => Gyvenimas
     case ("5braskes", "linksmos") => Pramogos
@@ -73,8 +74,12 @@ object CategoryMapper extends StrictLogging {
     case ("naujiena", "pasaulis") => Pasaulis
     case ("naujiena", "nusikaltimaiirnelaimes") => Kriminalai
     case ("naujiena", "nuomones") => Nuomones
+    case ("naujiena", "komentarai") => Nuomones
     case ("naujiena", "kultura") => Kultura
     case ("naujiena", "sveikata") => Gyvenimas
+
+    case ("laima", "laimos-veidai") => Pramogos
+    case ("laima", _) => Gyvenimas
 
     case ("pasaulis-kiseneje", _) => Kita
 

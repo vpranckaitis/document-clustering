@@ -1,6 +1,6 @@
 package lt.vpranckaitis.document.clustering
 
-import lt.vpranckaitis.document.clustering.dto.{Document, Evaluation}
+import lt.vpranckaitis.document.clustering.dto.{ClustersSize, Document, Evaluation}
 
 object ClusteringEvaluation {
   case class PositivesAndNegatives(tp: Long, fp: Long, tn: Long, fn: Long)
@@ -21,10 +21,18 @@ object ClusteringEvaluation {
     val averageEntropy = ClusteringEvaluation.averageEntropy(clusterCategories)
     val clusteringEntropy = ClusteringEvaluation.entropy(clusterCategories)
     val weightedAverageClusterDistance = ClusteringEvaluation.weightedAverageClusterDistance(clusters)
+    val clustersSize = ClusteringEvaluation.clustersSize(clusters)
 
-    Evaluation(purity = purity, precision = precision, recall = recall, f1 = f1,
-      averageEntropy = averageEntropy, clusteringEntropy = clusteringEntropy,
-      weightedAverageClusterDistance = weightedAverageClusterDistance)
+    Evaluation(
+      purity = purity,
+      precision = precision,
+      recall = recall,
+      f1 = f1,
+      averageEntropy = averageEntropy,
+      clusteringEntropy = clusteringEntropy,
+      weightedAverageClusterDistance = weightedAverageClusterDistance,
+      clustersSize = Some(clustersSize)
+      )
   }
 
   def purity(clusters: Seq[Seq[(String, Int)]]) = {
@@ -137,4 +145,39 @@ object ClusteringEvaluation {
     } yield weighted
     addends.sum / clusters.flatten.size
   }
+
+  def clustersSize(clusters: Seq[Seq[(Document, Double)]]): ClustersSize = {
+    val sizes = clusters map { _.size }
+    val stDev = standardDeviation(sizes)
+    val mad = medianAbsoluteDeviation(sizes)
+
+    ClustersSize(
+      standardDeviation = stDev,
+      medianAbsoluteDeviation = mad,
+      clusterCount = clusters.size,
+      smallestClusterSize = sizes.min,
+      largestClusterSize = sizes.max)
+  }
+
+  def standardDeviation(xs: Seq[Int]): Double = {
+    val mean = xs.sum.toDouble / xs.size
+    val squareDifferencesFromMean = xs map { _ - mean } map { x => x * x }
+    Math.sqrt(squareDifferencesFromMean.sum / xs.size)
+  }
+
+  def medianAbsoluteDeviation(xs: Seq[Int]): Double = {
+    val m = median(xs map { _.toDouble })
+    median(xs map { x => Math.abs(x - m) })
+  }
+
+  def median(xs: Seq[Double]): Double = {
+    val mid = xs.size / 2
+    val sorted = xs.sorted
+    if (xs.size % 2 == 1) {
+      sorted(mid)
+    } else {
+      (sorted(mid) + sorted(mid + 1)) / 2
+    }
+  }
+
 }
