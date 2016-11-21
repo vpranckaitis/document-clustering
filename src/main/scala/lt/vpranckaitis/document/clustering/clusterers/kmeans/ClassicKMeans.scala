@@ -1,6 +1,8 @@
 package lt.vpranckaitis.document.clustering.clusterers.kmeans
 
-import de.lmu.ifi.dbs.elki.algorithm.clustering.kmeans.KMeansMacQueen
+import de.lmu.ifi.dbs.elki.algorithm.clustering.kmeans.{KMeans, KMeansMacQueen}
+import de.lmu.ifi.dbs.elki.data.SparseDoubleVector
+import de.lmu.ifi.dbs.elki.data.model.KMeansModel
 import lt.vpranckaitis.document.clustering.SparseCosineDistanceFunction
 import lt.vpranckaitis.document.clustering.clusterers.{Clusterer, DistanceFunction}
 import lt.vpranckaitis.document.clustering.dto.Document
@@ -12,8 +14,12 @@ class ClassicKMeans(k: Int, distanceFunction: DistanceFunction, initial: Initial
   val MaxIterations = 10000
   val logMessage = s"ClassicKMeans(k=$k, distanceFunction=${distanceFunction.logMessage}, initialMeans=${initial.logMessage})"
 
+  private[kmeans] def getClusterer(): KMeans[SparseDoubleVector, KMeansModel] = {
+    new KMeansMacQueen(distanceFunction.getAlgorithm(), k, MaxIterations, initial.getAlgorithm())
+  }
+
   def clusterize(documents: Seq[Document]): ClusteringResults = {
-    val clusterer = new KMeansMacQueen(distanceFunction.getAlgorithm(), k, MaxIterations, initial.getAlgorithm())
+    val clusterer = getClusterer()
 
     val database = buildDatabase(documents)
 
