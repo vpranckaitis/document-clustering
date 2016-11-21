@@ -24,10 +24,11 @@ object Clustering extends App {
   val experimentService = new ExperimentService(new Storage)
 
   val experiments: Seq[Experiment] = for {
-    k <- 9 to 13
-    initialMeansAlgorithm <- Seq(InitialMeans.Random/*, InitialMeans.FarthestPoints, InitialMeans.KMeansPlusPlus*/)
-    seed <- Seq(45, 72468, 92438, 242, 85436)
-    initialMeans = initialMeansAlgorithm(seed)
+    k <- 9 to 9
+    //initialMeansAlgorithm <- Seq(InitialMeans.Random/*, InitialMeans.FarthestPoints, InitialMeans.KMeansPlusPlus*/)
+    //seed <- Seq(45, 72468, 92438, 242, 85436)
+    //initialMeans = initialMeansAlgorithm(seed)
+    linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage, LinkageMethod.Single)
   } yield { articles: Seq[Article] =>
     val featureVectors =
       FeatureSelection(articles).
@@ -36,16 +37,16 @@ object Clustering extends App {
         toLowercase().
         lengthAtLeast(1).
         stem().
-        termFrequency().
-        //termFrequencyInverseDocumentFrequency().
+        //termFrequency().
+        termFrequencyInverseDocumentFrequency().
         normalize().
         toFeatureVectors()
 
-    //val clusterer = new Hierarchical(DistanceFunction.Cosine, LinkageMethod.Complete, ExtractionMethod.HDBSCANTargetK(k))
-    val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
+    val clusterer = new Hierarchical(DistanceFunction.Cosine, linkage, ExtractionMethod.HDBSCAN(k))
+    //val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
     //val clusterer = new RandomClustering(k, seed)
 
-    (featureVectors, clusterer, "K-Means different seeds and cluster count, TF")
+    (featureVectors, clusterer, "Hierarchical clustering")
   }
 
   //---------------------------

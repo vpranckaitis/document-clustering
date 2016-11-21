@@ -12,7 +12,7 @@ import scala.concurrent.duration.Duration
 object Output extends App {
   val storage = new Storage()
 
-  val experiments = storage.getExperiments() map { experiments =>
+  val experiments = storage.getExperimentsByDataset(5) map { experiments =>
     for {
       e <- experiments
     } yield ExperimentSummary(

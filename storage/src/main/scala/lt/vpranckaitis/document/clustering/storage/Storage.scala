@@ -37,6 +37,15 @@ class Storage {
     db.run(q.result)
   }
 
+  def getExperimentsByDataset(datasetId: Int): Future[Seq[Experiment]] = {
+    val q = for {
+      e <- experimentsQuery
+      if e.datasetId === datasetId
+    } yield e
+
+    db.run(q.result)
+  }
+
   def getExperimentsByCategory(source: String, category: String, subcategory: String, limit: Int = 100): Future[Seq[Article]] = {
     val q = for {
       a <- articlesQuery

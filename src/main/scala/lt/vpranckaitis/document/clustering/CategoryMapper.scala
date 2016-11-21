@@ -101,6 +101,6 @@ object CategoryMapper extends StrictLogging {
     case ("sportas", _) => Sportas
     case ("verslas", _) => Verslas
     case ("laisvalaikis", _) => Pramogos
-    case e => logger.warn("15min " + e); Kita
+    case e => logger.warn("alfa " + e); Kita
   }
 }
