@@ -29,6 +29,14 @@ class Storage {
     db.run(q.result)
   }
 
+  def getArticleById(id: Int): Future[Option[Article]] = {
+    val q = for {
+      a <- articlesQuery
+      if a.id === id
+    } yield a
+    db.run(q.result.headOption)
+  }
+
   def getExperiments(): Future[Seq[Experiment]] = {
     val q = for {
       e <- experimentsQuery
@@ -52,6 +60,25 @@ class Storage {
       if (a.source === source && a.category === category && a.subcategory === subcategory)
     } yield a
     db.run(q.take(limit).result)
+  }
+
+  def getExperimentById(id: Int): Future[Option[Experiment]] = {
+    val q = for {
+      e <- experimentsQuery
+      if e.id === id
+    } yield e
+
+    db.run(q.result.headOption)
+  }
+
+  def getClustersByExperimentId(id: Int): Future[Seq[(ClusterArticle, Article)]] = {
+    val q = for {
+      ca <- clustersArticlesQuery
+      a <- articlesQuery
+      if ca.experimentId === id && ca.articleId === a.id
+    } yield (ca, a)
+
+    db.run(q.result)
   }
 
   def update(o: Article) = {

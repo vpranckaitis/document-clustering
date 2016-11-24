@@ -24,6 +24,8 @@ val elki = "de.lmu.ifi.dbs.elki" % "elki" % "0.7.1"
 val scalatest = "org.scalatest" %% "scalatest" % "2.2.6"
 
 val sprayJson = "io.spray" %%  "spray-json" % "1.3.2"
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.0"
+val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0"
 
 val storage = (project in file("storage"))
   .settings(commonSettings: _*)
@@ -36,7 +38,7 @@ val scraper = (project in file("scraper"))
 
 val dto = (project in file("dto"))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= jodaTime ++ Seq(sprayJson))
+  .settings(libraryDependencies ++= jodaTime ++ Seq(akkaHttp, sprayJson, akkaHttpSprayJson))
 
 val output = (project in file("output"))
   .settings(commonSettings: _*)

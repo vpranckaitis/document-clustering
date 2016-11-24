@@ -1,28 +1,39 @@
 package lt.vpranckaitis.document.clustering
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.server.Directives._
+import akka.stream.ActorMaterializer
 import lt.vpranckaitis.document.clustering.dto.ExtendedJsonProtocol._
 import lt.vpranckaitis.document.clustering.dto._
 import lt.vpranckaitis.document.clustering.storage.Storage
-import spray.json._
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object Output extends App {
+  implicit val system = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+
   val storage = new Storage()
+  val service = new Service(storage)
 
-  val experiments = storage.getExperimentsByDataset(5) map { experiments =>
-    for {
-      e <- experiments
-    } yield ExperimentSummary(
-      e.datasetId,
-      e.date,
-      e.runtime,
-      e.configuration.parseJson.convertTo[Configuration],
-      e.evaluation.parseJson.convertTo[Evaluation],
-      e.comment)
-  }
+  val route =
+    rejectEmptyResponse {
+      pathPrefix("experiments") {
+        pathEndOrSingleSlash {
+          complete(service.getExperiments())
+        } ~
+        path(IntNumber) { id =>
+          complete(service.getExperiment(id))
+        } ~
+        path(IntNumber / "clusters") { experimentId =>
+          complete(service.getClustersByExperimentId(experimentId))
+        }
+      }
+    }
 
-  println(Await.result(experiments, Duration.Inf).toJson)
+  Http().bindAndHandle(route, "localhost", 8000)
 }

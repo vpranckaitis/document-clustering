@@ -32,6 +32,7 @@ class ExperimentService(storage: Storage) extends StrictLogging {
     val evaluation = ClusteringEvaluation.evaluate(clusteringResults.clusters)
 
     ExperimentSummary(
+      None,
       dataSet,
       DateTime.now,
       runtime,
