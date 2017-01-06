@@ -17,7 +17,7 @@ trait Clusterer {
   def logMessage: String
   def clusterize(documents: Seq[Document]): ClusteringResults
 
-  private[clusterers] def buildDatabase(vectors: Seq[SparseDoubleVector], indexes: Array[IndexFactory[_ <: NumberVector, _ <: Index]] = null) = {
+  private[clusterers] def buildDatabase(vectors: Seq[SparseDoubleVector], indexes: Array[IndexFactory[_ <: NumberVector, _ <: Index]] = Array()) = {
     var dimensionality = (vectors map { _.getDimensionality }).max
 
     val typeInformation = new VectorFieldTypeInformation(SparseDoubleVector.FACTORY, dimensionality)
