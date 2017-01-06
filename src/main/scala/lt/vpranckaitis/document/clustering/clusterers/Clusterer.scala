@@ -2,11 +2,12 @@ package lt.vpranckaitis.document.clustering.clusterers
 
 import de.lmu.ifi.dbs.elki.data.`type`.VectorFieldTypeInformation
 import de.lmu.ifi.dbs.elki.data.model.Model
-import de.lmu.ifi.dbs.elki.data.{Cluster, SparseDoubleVector}
+import de.lmu.ifi.dbs.elki.data.{Cluster, NumberVector, SparseDoubleVector}
 import de.lmu.ifi.dbs.elki.database.StaticArrayDatabase
 import de.lmu.ifi.dbs.elki.database.ids.{DBIDIter, DBIDRef}
 import de.lmu.ifi.dbs.elki.datasource.MultipleObjectsBundleDatabaseConnection
 import de.lmu.ifi.dbs.elki.datasource.bundle.MultipleObjectsBundle
+import de.lmu.ifi.dbs.elki.index.{Index, IndexFactory}
 import lt.vpranckaitis.document.clustering.clusterers.kmeans.ClusteringResults
 import lt.vpranckaitis.document.clustering.dto.Document
 
@@ -16,13 +17,13 @@ trait Clusterer {
   def logMessage: String
   def clusterize(documents: Seq[Document]): ClusteringResults
 
-  private[clusterers] def buildDatabase(vectors: Seq[SparseDoubleVector]) = {
+  private[clusterers] def buildDatabase(vectors: Seq[SparseDoubleVector], indexes: Array[IndexFactory[_ <: NumberVector, _ <: Index]] = null) = {
     var dimensionality = (vectors map { _.getDimensionality }).max
 
     val typeInformation = new VectorFieldTypeInformation(SparseDoubleVector.FACTORY, dimensionality)
     val multipleObjectsBundle = MultipleObjectsBundle.makeSimple(typeInformation, vectors.toList)
     val databaseConnection = new MultipleObjectsBundleDatabaseConnection(multipleObjectsBundle)
-    val database = new StaticArrayDatabase(databaseConnection, null)
+    val database = new StaticArrayDatabase(databaseConnection, indexes.toList)
     database.initialize()
     database
   }

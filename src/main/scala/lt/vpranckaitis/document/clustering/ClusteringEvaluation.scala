@@ -176,7 +176,7 @@ object ClusteringEvaluation {
     if (xs.size % 2 == 1) {
       sorted(mid)
     } else {
-      (sorted(mid) + sorted(mid + 1)) / 2
+      (sorted(mid) + sorted(mid - 1)) / 2
     }
   }
 
