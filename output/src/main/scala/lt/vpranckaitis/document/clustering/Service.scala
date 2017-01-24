@@ -44,4 +44,12 @@ class Service(storage: Storage) {
       grouped.values.toSeq map { Cluster(_) }
     }
   }
+
+  def getClusterSizesByExperimentId(experimentId: Int): Future[Seq[Int]] = {
+    storage.getClustersByExperimentId(experimentId) map { clusters =>
+      val grouped = clusters groupBy { _._1.cluster } mapValues { _.size }
+
+      grouped.values.toSeq.sorted(Ordering[Int].reverse)
+    }
+  }
 }

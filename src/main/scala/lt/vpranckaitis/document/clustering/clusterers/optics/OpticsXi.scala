@@ -19,7 +19,7 @@ class OpticsXi(opticsAlgorithm: OpticsAlgorithm, xi: Double) extends Clusterer {
 
     val deLiCluIndex = new DeLiCluTreeFactory[SparseDoubleVector](new MemoryPageFileFactory[Page](2000000000), new AbstractRTreeSettings())
 
-    val database = buildDatabase(documents, Array(deLiCluIndex))
+    val database = buildDatabase(documents)
 
     val clusters = clusterer.run(database).getAllClusters map { c =>
       val cluster = extractClusters(database)(c)

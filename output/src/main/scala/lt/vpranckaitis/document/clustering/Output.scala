@@ -31,6 +31,9 @@ object Output extends App {
         } ~
         path(IntNumber / "clusters") { experimentId =>
           complete(service.getClustersByExperimentId(experimentId))
+        } ~
+        path(IntNumber / "cluster-sizes") { experimentId =>
+          complete(service.getClusterSizesByExperimentId(experimentId))
         }
       }
     }

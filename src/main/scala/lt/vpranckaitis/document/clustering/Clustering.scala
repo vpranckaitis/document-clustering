@@ -7,7 +7,7 @@ import lt.vpranckaitis.document.clustering.clusterers.gdbscan.{CorePredicate, Gd
 import lt.vpranckaitis.document.clustering.clusterers.hierarchical.{ExtractionMethod, Hierarchical, LinkageMethod}
 import lt.vpranckaitis.document.clustering.clusterers.{DistanceFunction, random}
 import lt.vpranckaitis.document.clustering.clusterers.kmeans.{BisectingKMeans, ClassicKMeans, InitialMeans}
-import lt.vpranckaitis.document.clustering.clusterers.optics.{DeLiClu, OpticsXi}
+import lt.vpranckaitis.document.clustering.clusterers.optics.{DeLiClu, Optics, OpticsXi}
 import lt.vpranckaitis.document.clustering.clusterers.random.RandomClustering
 import lt.vpranckaitis.document.clustering.storage.Storage
 import lt.vpranckaitis.document.clustering.storage.schema.Article
@@ -26,12 +26,13 @@ object Clustering extends App {
   val experimentService = new ExperimentService(new Storage)
 
   val experiments: Seq[Experiment] = for {
-    xi <- 0.001 to 1 by 0.05
+    //xi <- 0.001 to 1 by 0.05
     //k <- 9 to 13
     //initialMeansAlgorithm <- Seq(InitialMeans.Random/*, InitialMeans.FarthestPoints, InitialMeans.KMeansPlusPlus*/)
     //seed <- Seq(45, 72468, 92438, 242, 85436)
     //initialMeans = initialMeansAlgorithm(seed)
-    //linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage, LinkageMethod.Single)
+    minSize <- Seq(110, 140)
+    linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage/*, LinkageMethod.Single*/)
   } yield { articles: Seq[Article] =>
     val featureVectors =
       FeatureSelection(articles).
@@ -46,20 +47,26 @@ object Clustering extends App {
         toFeatureVectors()
 
     //val clusterer = new BisectingKMeans(k, new ClassicKMeans(2, DistanceFunction.Cosine, initialMeans))
-    //val clusterer = new Hierarchical(DistanceFunction.Cosine, linkage, ExtractionMethod.HDBSCAN(k))
+    val clusterer = new Hierarchical(DistanceFunction.Cosine, linkage, ExtractionMethod.HDBSCAN(minSize))
     //val clusterer = new ClassicKMeans(k, DistanceFunction.Cosine, initialMeans)
     //val clusterer = new RandomClustering(k, seed)
     //val clusterer = new Gdbscan(NeighborPredicate.Epsilon(eps, DistanceFunction.Cosine), CorePredicate.MinPoints(5))
-    val clusterer = new OpticsXi(new DeLiClu(DistanceFunction.Cosine, 5), xi)
+    //val clusterer = new OpticsXi(new Optics(DistanceFunction.Cosine, Int.MaxValue, 5), xi)
 
-    (featureVectors, clusterer, "OPTICS Xi with DeLiClu")
+    val comment = linkage match {
+      case LinkageMethod.Single => "Hierarchical Single HDBSCAN"
+      case LinkageMethod.GroupAverage => "Hierarchical GroupAverage HDBSCAN"
+      case LinkageMethod.Complete => "Hierarchical Complete HDBSCAN"
+    }
+
+    (featureVectors, clusterer, comment)
   }
 
   //---------------------------
 
   println(s"Experiment count: ${experiments.size}")
 
-  val experimentsRun = experimentService.consoleOutput.runExperiments(5)(experiments)
+  val experimentsRun = experimentService.runExperiments(5)(experiments)
   val successfulExperimentsCount = Await.result(experimentsRun, Duration.Inf)
 
   println(s"Successful experiments: ${successfulExperimentsCount}/${experiments.size}")
