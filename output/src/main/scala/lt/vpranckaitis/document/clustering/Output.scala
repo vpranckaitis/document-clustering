@@ -34,6 +34,11 @@ object Output extends App {
         } ~
         path(IntNumber / "cluster-sizes") { experimentId =>
           complete(service.getClusterSizesByExperimentId(experimentId))
+        } ~
+        path (IntNumber / "common-words") { experimentId =>
+          parameters('unstem ? false) { unstem =>
+            complete(service.getCommonWords(experimentId, unstem))
+          }
         }
       }
     }

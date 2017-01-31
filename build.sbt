@@ -27,6 +27,9 @@ val sprayJson = "io.spray" %%  "spray-json" % "1.3.2"
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % "10.0.0"
 val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0"
 
+val common = (project in file("common"))
+  .settings(commonSettings: _*)
+
 val storage = (project in file("storage"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= slick ++ jodaTime ++ Seq(postgreSqlDriver, scalaLogging, logback, sprayJson))
@@ -42,11 +45,11 @@ val dto = (project in file("dto"))
 
 val output = (project in file("output"))
   .settings(commonSettings: _*)
-  .dependsOn(storage, dto)
+  .dependsOn(storage, dto, common)
   .settings(libraryDependencies += sprayJson)
 
 val `document-clustering` = (project in file("."))
   .settings(commonSettings: _*)
-  .aggregate(storage, dto)
-  .dependsOn(storage, dto)
+  .aggregate(storage, dto, common)
+  .dependsOn(storage, dto, common)
   .settings(libraryDependencies ++= Seq(apacheCommonsMath, elki, scalatest))
