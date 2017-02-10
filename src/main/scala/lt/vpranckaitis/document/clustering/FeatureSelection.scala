@@ -55,6 +55,26 @@ object FeatureSelection {
       new Tokenized(articles, filtered, log :+ s"lengthAtMost($to)")
     }
 
+    private def idf(tokenArrays: Seq[Array[String]]): Map[String, Double] = {
+      val n = tokenArrays.size
+
+      val termAppearances = tokenArrays flatMap { _.distinct } groupBy { identity } mapValues { _.size }
+
+      termAppearances map { case (token, ni) => (token, Math.log(n.toDouble / ni)) }
+    }
+
+    def filterTokensWithLowestIdf(percentage: Double): Tokenized = {
+      val idfs = idf(tokenArrays)
+
+      val count = (idfs.size * percentage).toInt
+
+      val filteredWords = idfs.toSeq.sortBy(_._2).take(count).unzip._1.toSet
+
+      val filteredTokenArrays = tokenArrays map { _ filter filteredWords }
+
+      new Tokenized(articles, filteredTokenArrays, log :+ s"filterTokensWithLowestIdf($percentage)")
+    }
+
     def termFrequency(): Valued = {
       val termFrequencyArrays = tokenArrays map { tokens =>
         val tf = tokens groupBy { identity } mapValues { _.length.toDouble }

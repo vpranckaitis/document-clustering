@@ -27,12 +27,14 @@ object Clustering extends App {
 
   val experiments: Seq[Experiment] = for {
     //xi <- 0.001 to 1 by 0.05
+    p <- 100 to 10 by -10
+    percentage = p.toDouble / 100
     //k <- 9 to 13
     //initialMeansAlgorithm <- Seq(InitialMeans.Random/*, InitialMeans.FarthestPoints, InitialMeans.KMeansPlusPlus*/)
     //seed <- Seq(45, 72468, 92438, 242, 85436)
     //initialMeans = initialMeansAlgorithm(seed)
-    minSize <- Seq(110, 140)
-    linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage/*, LinkageMethod.Single*/)
+    minSize <- Seq(120)
+    linkage <- Seq(/*LinkageMethod.Complete, */LinkageMethod.GroupAverage/*, LinkageMethod.Single*/)
   } yield { articles: Seq[Article] =>
     val featureVectors =
       FeatureSelection(articles).
@@ -41,6 +43,7 @@ object Clustering extends App {
         toLowercase().
         lengthAtLeast(1).
         stem().
+        filterTokensWithLowestIdf(percentage).
         //termFrequency().
         termFrequencyInverseDocumentFrequency().
         normalize().
@@ -53,13 +56,13 @@ object Clustering extends App {
     //val clusterer = new Gdbscan(NeighborPredicate.Epsilon(eps, DistanceFunction.Cosine), CorePredicate.MinPoints(5))
     //val clusterer = new OpticsXi(new Optics(DistanceFunction.Cosine, Int.MaxValue, 5), xi)
 
-    val comment = linkage match {
+    /*val comment = linkage match {
       case LinkageMethod.Single => "Hierarchical Single HDBSCAN"
       case LinkageMethod.GroupAverage => "Hierarchical GroupAverage HDBSCAN"
       case LinkageMethod.Complete => "Hierarchical Complete HDBSCAN"
-    }
+    }*/
 
-    (featureVectors, clusterer, comment)
+    (featureVectors, clusterer, "GroupAverage Hierarchical taking tokens with lowest IDF")
   }
 
   //---------------------------
