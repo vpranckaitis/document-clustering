@@ -38,7 +38,7 @@ class Service(storage: Storage) {
     storage.getExperimentById(id) map { _ map { toExperimentSummary } }
   }
 
-  def getClustersByExperimentId(experimentId: Int): Future[Seq[Cluster]] = {
+  def getClustersByExperimentId(experimentId: Int): Future[Map[Int, Cluster]] = {
     storage.getClustersByExperimentId(experimentId) map { clusters =>
       val grouped = clusters groupBy { _._1.cluster } mapValues { clusters =>
         for {
@@ -46,7 +46,7 @@ class Service(storage: Storage) {
         } yield ArticleSummary(article.title, article.description, article.url)
       }
 
-      grouped.values.toSeq map { Cluster(_) }
+      grouped mapValues { Cluster(_) }
     }
   }
 
@@ -58,7 +58,7 @@ class Service(storage: Storage) {
     }
   }
 
-  def getCommonWords(experimentId: Int, returnUnstemmed: Boolean = false): Future[Seq[Seq[String]]] = {
+  def getCommonWords(experimentId: Int, returnUnstemmed: Boolean = false): Future[Seq[ClusterInfo]] = {
     val stemmer = new LithuanianStemmer()
     def stemWord(s: String) = {
       stemmer.setCurrent(s)
@@ -91,24 +91,31 @@ class Service(storage: Storage) {
         orderByOccurance(xs.unzip._2.toSeq)
       }
 
-      val onlyStems = grouped.values.toSeq map { _ map { _.unzip._1 } }
+      val onlyStems = grouped mapValues { _ map { _.unzip._1 } }
 
-      val wholeIdf = idf(onlyStems.flatten)
+      val wholeIdf = idf(onlyStems.values.flatten.toSeq)
 
       val result = for {
-        tokenArrays <- onlyStems
+        (cluster, tokenArrays) <- onlyStems
         clusterIdf = idf(tokenArrays)
         adjustedIdf = clusterIdf map { case (k, v) =>
           (k, wholeIdf(k) / (1 + v))
         }
         sorted = adjustedIdf.toSeq.sortBy(_._2)(Ordering[Double].reverse) take 10
-      } yield sorted.unzip._1
+      } yield (cluster, sorted.unzip._1)
 
-      if (returnUnstemmed) {
-        result map { _ flatMap { w => unstemmedWords(w) take 3 } }
+
+      val unstemmedResult = if (returnUnstemmed) {
+        result.toMap mapValues { _ flatMap { w => unstemmedWords(w) take 3 } }
       } else {
-        result
+        result.toMap
       }
+
+      val infos = unstemmedResult map { case (cluster, words) =>
+        ClusterInfo(s"http://localhost:8000/experiments/$experimentId/clusters/$cluster", words)
+      }
+
+      infos.toSeq
     }
   }
 }

@@ -30,7 +30,10 @@ object Output extends App {
           complete(service.getExperiment(id))
         } ~
         path(IntNumber / "clusters") { experimentId =>
-          complete(service.getClustersByExperimentId(experimentId))
+          complete(service.getClustersByExperimentId(experimentId) map { _.values })
+        } ~
+        path(IntNumber / "clusters" / IntNumber) { (experimentId, clusterIdx) =>
+          complete(service.getClustersByExperimentId(experimentId) map { _.get(clusterIdx) })
         } ~
         path(IntNumber / "cluster-sizes") { experimentId =>
           complete(service.getClusterSizesByExperimentId(experimentId))

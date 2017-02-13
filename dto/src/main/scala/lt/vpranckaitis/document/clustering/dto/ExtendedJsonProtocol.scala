@@ -23,6 +23,7 @@ object ExtendedJsonProtocol extends DefaultJsonProtocol {
   implicit val clusterSizeFormat = jsonFormat5(ClustersSize)
   implicit val EvaluationFormat = jsonFormat8(Evaluation)
   implicit val ExperimentSummaryFormat = jsonFormat7(ExperimentSummary)
-  implicit val ArticleSummaryForamat = jsonFormat3(ArticleSummary)
-  implicit val ClusterFormtar = jsonFormat1(Cluster)
+  implicit val ArticleSummaryFormat = jsonFormat3(ArticleSummary)
+  implicit val ClusterFormat = jsonFormat1(Cluster)
+  implicit val ClusterInfoFormat = jsonFormat2(ClusterInfo)
 }
