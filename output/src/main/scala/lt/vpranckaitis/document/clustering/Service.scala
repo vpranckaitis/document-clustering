@@ -118,4 +118,10 @@ class Service(storage: Storage) {
       infos.toSeq
     }
   }
+
+  def getArticleIdClusterMap(experimentId: Int): Future[Seq[(Int, Int)]] = {
+    storage.getClustersByExperimentId(experimentId) map { clusters =>
+      clusters.unzip._1 map { x => (x.articleId, x.cluster) }
+    }
+  }
 }

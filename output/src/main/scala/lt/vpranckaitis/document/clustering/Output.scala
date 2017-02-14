@@ -38,10 +38,13 @@ object Output extends App {
         path(IntNumber / "cluster-sizes") { experimentId =>
           complete(service.getClusterSizesByExperimentId(experimentId))
         } ~
-        path (IntNumber / "common-words") { experimentId =>
+        path(IntNumber / "common-words") { experimentId =>
           parameters('unstem ? false) { unstem =>
             complete(service.getCommonWords(experimentId, unstem))
           }
+        } ~
+        path(IntNumber / "article-id-cluster") { experimentId =>
+          complete(service.getArticleIdClusterMap(experimentId))
         }
       }
     }
