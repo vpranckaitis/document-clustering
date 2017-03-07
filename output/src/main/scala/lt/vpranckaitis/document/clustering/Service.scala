@@ -106,13 +106,13 @@ class Service(storage: Storage) {
 
 
       val unstemmedResult = if (returnUnstemmed) {
-        result.toMap mapValues { _ flatMap { w => unstemmedWords(w) take 3 } }
+        result.toMap mapValues { _ flatMap { w => unstemmedWords(w) take 1 } }
       } else {
         result.toMap
       }
 
       val infos = unstemmedResult map { case (cluster, words) =>
-        ClusterInfo(s"http://localhost:8000/experiments/$experimentId/clusters/$cluster", words)
+        ClusterInfo(s"http://localhost:8000/experiments/$experimentId/clusters/$cluster", grouped(cluster).size, words)
       }
 
       infos.toSeq
