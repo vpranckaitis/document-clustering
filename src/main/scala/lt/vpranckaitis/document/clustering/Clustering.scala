@@ -23,7 +23,13 @@ object Clustering extends App {
     sys.exit()
   }
 
-  val experimentService = new ExperimentService(new Storage)
+  val storage = new Storage
+  val experimentService = new ExperimentService(storage)
+  Runtime.getRuntime().addShutdownHook(new Thread() {
+    override def run(): Unit = {
+      storage.close()
+    }
+  })
 
   val experiments: Seq[Experiment] = for {
     //xi <- 0.001 to 1 by 0.05
@@ -76,5 +82,5 @@ object Clustering extends App {
 
   println(s"Successful experiments: ${successfulExperimentsCount}/${experiments.size}")
 
-  experimentService.close()
+
 }
