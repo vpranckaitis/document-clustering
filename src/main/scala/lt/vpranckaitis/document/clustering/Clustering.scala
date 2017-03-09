@@ -1,6 +1,6 @@
 package lt.vpranckaitis.document.clustering
 
-import java.io.BufferedReader
+import java.io.{BufferedReader, PrintWriter}
 
 import lt.vpranckaitis.document.clustering.ExperimentService.Experiment
 import lt.vpranckaitis.document.clustering.clusterers.gdbscan.{CorePredicate, Gdbscan, NeighborPredicate}
@@ -27,27 +27,29 @@ object Clustering extends App {
 
   val experiments: Seq[Experiment] = for {
     //xi <- 0.001 to 1 by 0.05
-    p <- 100 to 10 by -10
-    percentage = p.toDouble / 100
-    //k <- 9 to 13
+    //p <- 100 to 10 by -10
+    //percentage = p.toDouble / 100
+    //k <- 9 to 9
     //initialMeansAlgorithm <- Seq(InitialMeans.Random/*, InitialMeans.FarthestPoints, InitialMeans.KMeansPlusPlus*/)
-    //seed <- Seq(45, 72468, 92438, 242, 85436)
+    //seed <- Seq(45/*, 72468, 92438, 242, 85436*/)
     //initialMeans = initialMeansAlgorithm(seed)
-    minSize <- Seq(120)
-    linkage <- Seq(/*LinkageMethod.Complete, */LinkageMethod.GroupAverage/*, LinkageMethod.Single*/)
+    minSize <- Seq(2)
+    linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage, LinkageMethod.Single)
   } yield { articles: Seq[Article] =>
     val featureVectors =
-      FeatureSelection(articles).
+      FeatureSelection(articles take 200).
         takeText().
         split().
         toLowercase().
         lengthAtLeast(1).
         stem().
-        filterTokensWithLowestIdf(percentage).
+        //filterTokensWithLowestIdf(1.0).
         //termFrequency().
         termFrequencyInverseDocumentFrequency().
         normalize().
         toFeatureVectors()
+
+    //Util.writePcaToFile(featureVectors.documents, 2, "pca0.2.csv")
 
     //val clusterer = new BisectingKMeans(k, new ClassicKMeans(2, DistanceFunction.Cosine, initialMeans))
     val clusterer = new Hierarchical(DistanceFunction.Cosine, linkage, ExtractionMethod.HDBSCAN(minSize))
@@ -56,21 +58,23 @@ object Clustering extends App {
     //val clusterer = new Gdbscan(NeighborPredicate.Epsilon(eps, DistanceFunction.Cosine), CorePredicate.MinPoints(5))
     //val clusterer = new OpticsXi(new Optics(DistanceFunction.Cosine, Int.MaxValue, 5), xi)
 
-    /*val comment = linkage match {
+    val comment = linkage match {
       case LinkageMethod.Single => "Hierarchical Single HDBSCAN"
       case LinkageMethod.GroupAverage => "Hierarchical GroupAverage HDBSCAN"
       case LinkageMethod.Complete => "Hierarchical Complete HDBSCAN"
-    }*/
+    }
 
-    (featureVectors, clusterer, "GroupAverage Hierarchical taking tokens with lowest IDF")
+    (featureVectors, clusterer, comment)
   }
 
   //---------------------------
 
   println(s"Experiment count: ${experiments.size}")
 
-  val experimentsRun = experimentService.runExperiments(5)(experiments)
+  val experimentsRun = experimentService.consoleOutput.runExperiments(5)(experiments)
   val successfulExperimentsCount = Await.result(experimentsRun, Duration.Inf)
 
   println(s"Successful experiments: ${successfulExperimentsCount}/${experiments.size}")
+
+  experimentService.close()
 }

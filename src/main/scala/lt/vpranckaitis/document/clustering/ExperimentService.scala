@@ -99,6 +99,8 @@ class ExperimentService(storage: Storage) extends StrictLogging {
     }
   }
 
+  def close(): Unit = storage.close()
+
   class ConsoleOutputExperimentService private[ExperimentService] (storage: Storage) extends ExperimentService(storage) {
     override def saveExperiment(clusteringResults: ClusteringResults, experiment: ExperimentSummary): Future[Unit] = {
       println(experiment.toJson.prettyPrint)

@@ -50,4 +50,10 @@ object Output extends App {
     }
 
   Http().bindAndHandle(route, "localhost", 8000)
+
+  Runtime.getRuntime().addShutdownHook(new Thread() {
+    override def run(): Unit = {
+      storage.close()
+    }
+  })
 }

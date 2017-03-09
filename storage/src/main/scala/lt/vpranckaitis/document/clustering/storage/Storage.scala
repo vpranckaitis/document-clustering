@@ -89,4 +89,6 @@ class Storage {
 
     db.run(q.update(o))
   }
+
+  def close(): Unit = db.close()
 }

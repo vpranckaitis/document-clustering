@@ -115,7 +115,7 @@ class Service(storage: Storage) {
         ClusterInfo(s"http://localhost:8000/experiments/$experimentId/clusters/$cluster", grouped(cluster).size, words)
       }
 
-      infos.toSeq
+      infos.toSeq.sortBy(_.size)(Ordering[Int].reverse)
     }
   }
 
