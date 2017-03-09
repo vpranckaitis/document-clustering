@@ -43,7 +43,7 @@ object Clustering extends App {
     linkage <- Seq(LinkageMethod.Complete, LinkageMethod.GroupAverage, LinkageMethod.Single)
   } yield { articles: Seq[Article] =>
     val featureVectors =
-      FeatureSelection(articles take 200).
+      FeatureSelection(articles).
         takeText().
         split().
         toLowercase().
