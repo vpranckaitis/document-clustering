@@ -4,6 +4,7 @@ import java.util.Locale
 
 import lt.vpranckaitis.document.clustering.dto.Document
 import lt.vpranckaitis.document.clustering.storage.schema.Article
+import org.joda.time.DateTime
 import org.tartarus.snowball.ext.LithuanianStemmer
 
 object FeatureSelection {
@@ -55,6 +56,10 @@ object FeatureSelection {
       new Tokenized(articles, filtered, log :+ s"lengthAtMost($to)")
     }
 
+    private def tf(tokens: Array[String]): Array[(String, Double)] = {
+      (tokens groupBy { identity } mapValues { _.length.toDouble }).toArray
+    }
+
     private def idf(tokenArrays: Seq[Array[String]]): Map[String, Double] = {
       val n = tokenArrays.size
 
@@ -97,6 +102,52 @@ object FeatureSelection {
       }
 
       new Valued(articles, termFrequencyArrays, log :+ "termFrequencyInverseDocumentFrequency()")
+    }
+
+    private def joinArticles(newId: Int, articles: Seq[Article]): Article = {
+      Article(Some(newId), "", "", "", "", DateTime.now(),
+        articles map { _.title } mkString " | ",
+        articles map { _.description } mkString " | ",
+        articles map { _.text } mkString " | ")
+    }
+
+    def clusterTermFrequencyInverseDocumentFrequency(experimentId: Int, articleIdToCluster: Map[Int, Int]): Valued = {
+      val clusterToArticles = (articles zip tokenArrays) groupBy { a => articleIdToCluster(a._1.id.get) }
+
+      val joinedArticlesTokens = for {
+        (clusterId, articlesAndTokens) <- clusterToArticles.toSeq
+        (cArticles, cTokens) = articlesAndTokens.unzip
+      } yield (joinArticles(clusterId, cArticles), cTokens.flatten.toArray)
+
+      val (joinedArticles, joinedTokenArrays) = joinedArticlesTokens.unzip
+
+      val idfs = idf(joinedTokenArrays)
+
+      val termFrequencyArrays = joinedTokenArrays map { tokens =>
+        tf(tokens) map { case (term, freq) => (term, freq * idfs(term)) }
+      }
+
+      new Valued(joinedArticles, termFrequencyArrays, log :+ s"clusterTermFrequencyInverseDocumentFrequency(experimentId = $experimentId)")
+    }
+
+    def clusterTermFrequencyTermRelevance(experimentId: Int, articleIdToCluster: Map[Int, Int]): Valued = {
+
+      val idfs = idf(tokenArrays)
+
+      val clusterToArticles = (articles zip tokenArrays) groupBy { a => articleIdToCluster(a._1.id.get) }
+
+      val joinedArticlesAndTermFrequencies = for {
+        (clusterId, articlesAndTokens) <- clusterToArticles.toSeq
+        (cArticles, cTokens) = articlesAndTokens.unzip
+        cIdfs = idf(cTokens)
+        tfTermRelevances = tf(cTokens.flatten.toArray) map { case (term, termF) =>
+          (term, termF * idfs(term) / (1 + cIdfs(term)))
+        }
+      } yield (joinArticles(clusterId, cArticles), tfTermRelevances)
+
+      val (joinedArticles, termFrequencyArrays) = joinedArticlesAndTermFrequencies.unzip
+
+      new Valued(joinedArticles, termFrequencyArrays, log :+ s"clusterTermFrequencyTermRelevance(experimentId = $experimentId)")
     }
   }
 

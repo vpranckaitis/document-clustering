@@ -16,6 +16,7 @@ import scala.concurrent.Future
 
 object ExperimentService {
   type Experiment = (Seq[Article]) => (FeatureSelection.FeatureVectors, Clusterer, String)
+  type TwoLevelExperiment = (Seq[Article], Int, Map[Int, Int]) => (FeatureSelection.FeatureVectors, Clusterer, String)
 }
 
 class ExperimentService(storage: Storage) extends StrictLogging {
@@ -26,7 +27,7 @@ class ExperimentService(storage: Storage) extends StrictLogging {
                                clusteringResults: ClusteringResults, runtime: Long, comment: String) = {
     val dimensionality = featureVectors.documents.head.getDimensionality
 
-    println(s"Article count: ${featureVectors.documents.size}, dimensionality: $dimensionality")
+    println(s"Article count: ${clusteringResults.clusters.flatten.size}, dimensionality: $dimensionality")
 
     val configuration = Configuration(featureVectors.logMessage, clusterer.logMessage)
     val evaluation = ClusteringEvaluation.evaluate(clusteringResults.clusters)
@@ -91,6 +92,62 @@ class ExperimentService(storage: Storage) extends StrictLogging {
         count <- acc
         (dataSet, f) = dataSetWithFunction
         newCount <- runExperiment(dataSet)(f) map { _ => count + 1 } recover {
+          case ex =>
+            logger.error("Failed experiment", ex)
+            count
+        }
+      } yield newCount
+    }
+  }
+
+  def runTwoLevelExperiment(experimentId: Int)(f: ExperimentService.TwoLevelExperiment): Future[Unit] = {
+    val result = for {
+      experiment <- storage.getExperimentById(experimentId)
+      dataSet = experiment.get.datasetId
+      clustering <- storage.getClustersByExperimentId(experimentId)
+      articles = clustering.unzip._2
+      clusterToArticles = clustering groupBy { _._1.cluster } mapValues { _ map { _._2 } }
+      articleIdToCluster = clustering.unzip._1 groupBy { _.articleId } mapValues { _.head.cluster }
+    } yield {
+      val (featureVectors, clusterer, comment) = f(articles, experimentId, articleIdToCluster)
+
+      val (clusteringResults, runtime) = Util.time { clusterer.clusterize(featureVectors.documents) }
+
+      val restoredClusters = clusteringResults.clusters map { cluster =>
+        cluster flatMap { case (document, dist) =>
+          clusterToArticles(document.article.id.get) map { article =>
+            val newDocument = new Document(document.indexes, document.values, document.dimensionality, article)
+            (newDocument, dist)
+          }
+        }
+      }
+
+      val experimentResults = getExperimentSummary(
+        dataSet,
+        featureVectors,
+        clusterer,
+        clusteringResults.copy(clusters = restoredClusters),
+        runtime,
+        comment)
+
+      println(experimentResults)
+      saveExperiment(clusteringResults, experimentResults)
+    }
+
+    result flatMap identity
+  }
+
+  def runTwoLevelExperiments(experimentIds: Int*)(fs: Seq[ExperimentService.TwoLevelExperiment]): Future[Int] = {
+    val experimentIdsWithFunction = for {
+      experimentId <- experimentIds
+      experimentFunction <- fs
+    } yield (experimentId, experimentFunction)
+
+    experimentIdsWithFunction.foldLeft(Future(0)) { (acc, experimentIdWithFunction) =>
+      for {
+        count <- acc
+        (experimentId, f) = experimentIdWithFunction
+        newCount <- runTwoLevelExperiment(experimentId)(f) map { _ => count + 1 } recover {
           case ex =>
             logger.error("Failed experiment", ex)
             count
