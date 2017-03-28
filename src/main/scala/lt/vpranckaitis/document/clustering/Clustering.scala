@@ -52,8 +52,8 @@ object Clustering extends App {
         //filterTokensWithLowestIdf(1.0).
         //termFrequency().
         //termFrequencyInverseDocumentFrequency().
-        clusterTermFrequencyTermRelevance(experimentId, articleIdToCluster).
-        //clusterTermFrequencyInverseDocumentFrequency(experimentId, articleIdToCluster).
+        //clusterTermFrequencyTermRelevance(experimentId, articleIdToCluster).
+        clusterTermFrequencyInverseDocumentFrequency(experimentId, articleIdToCluster).
         normalize().
         toFeatureVectors()
 
@@ -72,7 +72,7 @@ object Clustering extends App {
       case LinkageMethod.Complete => "Hierarchical Complete HDBSCAN"
     }*/
 
-    (featureVectors, clusterer, "K-means second level cluster TF-IDF experiment=" + experimentId)
+    (featureVectors, clusterer, "K-means second level PROPER cluster TF-IDF experiment=" + experimentId)
   }
 
   //---------------------------

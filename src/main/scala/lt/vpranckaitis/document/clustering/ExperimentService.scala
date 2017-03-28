@@ -122,16 +122,18 @@ class ExperimentService(storage: Storage) extends StrictLogging {
         }
       }
 
+      val restoredClusteringResults = clusteringResults.copy(clusters = restoredClusters)
+
       val experimentResults = getExperimentSummary(
         dataSet,
         featureVectors,
         clusterer,
-        clusteringResults.copy(clusters = restoredClusters),
+        restoredClusteringResults,
         runtime,
         comment)
 
       println(experimentResults)
-      saveExperiment(clusteringResults, experimentResults)
+      saveExperiment(restoredClusteringResults, experimentResults)
     }
 
     result flatMap identity

@@ -39,6 +39,9 @@ object Output extends App {
           complete(service.getClusterSizesByExperimentId(experimentId))
         } ~
         path(IntNumber / "common-words") { experimentId =>
+          parameters('group.as[Int], 'unstem ? false) { (groupExperimentId, unstem) =>
+            complete(service.getCommonWordsGrouped(experimentId, groupExperimentId, unstem))
+          } ~
           parameters('unstem ? false) { unstem =>
             complete(service.getCommonWords(experimentId, unstem))
           }

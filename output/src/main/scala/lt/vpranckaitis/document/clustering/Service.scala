@@ -119,6 +119,27 @@ class Service(storage: Storage) {
     }
   }
 
+  def getCommonWordsGrouped(experimentId: Int, groupExperimentId: Int, returnUnstemmed: Boolean = false): Future[Seq[Seq[ClusterInfo]]] = {
+    for {
+      commonWords <- getCommonWords(experimentId, returnUnstemmed)
+      clusters <- storage.getClustersByExperimentId(experimentId)
+      groupClusters <- storage.getClustersByExperimentId(groupExperimentId)
+    } yield {
+      val articleGrouping = (groupClusters map { x => (x._1.articleId, x._1.cluster) }).toMap
+      val clustersGrouping = clusters groupBy { _._1.cluster } mapValues { as =>
+        val groupingsWithCounts = as map { a => articleGrouping(a._1.articleId) } groupBy identity mapValues { _.size }
+        (groupingsWithCounts.toSeq maxBy { _._2 })._1
+      }
+
+      val groupedInfos = commonWords groupBy { info =>
+        val clusterId = info.ref.split('/').last.toInt
+        clustersGrouping(clusterId)
+      }
+
+      groupedInfos.values.toSeq.sortBy(x => (x map { _.size }).sum)(Ordering[Int].reverse)
+    }
+  }
+
   def getArticleIdClusterMap(experimentId: Int): Future[Seq[(Int, Int)]] = {
     storage.getClustersByExperimentId(experimentId) map { clusters =>
       clusters.unzip._1 map { x => (x.articleId, x.cluster) }
